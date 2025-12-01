@@ -1,6 +1,6 @@
 # Portfolio & CTF Write-ups Website
 
-A professional portfolio and CTF write-up blog built with **Next.js 15**, **Tailwind CSS v4**, and **MDX**. Designed for cybersecurity professionals, it features a custom Obsidian sync workflow, multi-language support, and a premium aesthetic.
+A professional portfolio and CTF write-up blog built with **Next.js 15**, **Tailwind CSS v4**, and **MDX**. Featuring a custom Obsidian sync workflow and multi-language support.
 
 ## 🛠️ Technical Stack
 
