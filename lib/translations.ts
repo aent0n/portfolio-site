@@ -12,6 +12,7 @@ export const translations = {
         },
         hero: {
             role: "Portfolio",
+            status: "À l'écoute d'opportunités",
             title_prefix: "Anton ADAM",
             title_suffix: "Étudiant en Cybersécurité & IA",
             description: "M1 CS&AI à l'EFREI. Je souhaite orienter mon parcours vers l'investigation numérique et la sécurité offensive.",
@@ -102,6 +103,7 @@ export const translations = {
         },
         hero: {
             role: "Portfolio",
+            status: "Open to opportunities",
             title_prefix: "Anton ADAM",
             title_suffix: "Cybersecurity Student & SysAdmin",
             description: "Master's student in Cybersecurity & AI at EFREI. Aspiring to join a DFIR or Red Team.",
@@ -192,6 +194,7 @@ export const translations = {
         },
         hero: {
             role: "Portfolio",
+            status: "Offen für Möglichkeiten",
             title_prefix: "Anton ADAM",
             title_suffix: "Student der Cybersicherheit & SysAdmin",
             description: "Masterstudent in Cybersicherheit & KI an der EFREI. Ich strebe an, einem DFIR- oder Red-Team beizutreten.",

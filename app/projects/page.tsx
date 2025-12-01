@@ -20,12 +20,7 @@ const projectsData = [
         tags: ["C++", "Arduino", "Signal Processing"],
         category: "tools",
     },
-    {
-        id: "portfolio",
-        tags: ["Next.js", "Tailwind", "Framer Motion"],
-        github: "https://github.com/yourusername/portfolio",
-        category: "web",
-    },
+
 ];
 
 export default function ProjectsPage() {
@@ -51,8 +46,8 @@ export default function ProjectsPage() {
                         key={category}
                         onClick={() => setActiveCategory(category)}
                         className={`rounded-full px-6 py-2 text-sm font-medium transition-colors ${activeCategory === category
-                                ? "bg-blue text-base"
-                                : "bg-surface0/50 text-surface1 hover:bg-surface0 hover:text-foreground"
+                            ? "bg-blue text-base"
+                            : "bg-surface0/50 text-surface1 hover:bg-surface0 hover:text-foreground"
                             }`}
                     >
                         {t(`projects.categories.${category}`)}
