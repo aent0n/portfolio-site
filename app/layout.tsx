@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Anton ADAM -Portfolio & CTF Write-ups",
+  title: "Anton ADAM - Portfolio & CTF Write-ups",
   description: "Professional portfolio and CTF write-ups.",
 };
 

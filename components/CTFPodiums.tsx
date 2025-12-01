@@ -14,7 +14,7 @@ const podiums = [
         color: "text-blue",
     },
     {
-        event: "CyberNight 2025",
+        event: "EFREI - CyberNight 2025",
         rank: "58th / 263",
         category: "Team CTF",
         date: "Novembre 2025",
@@ -30,7 +30,7 @@ const podiums = [
         color: "text-blue",
     },
     {
-        event: "Eldoria",
+        event: "HackTheBox - Eldoria's Tales",
         rank: "Top 9.74% (792/8130)",
         category: "Team CTF",
         date: "Mars 2025",
@@ -38,9 +38,9 @@ const podiums = [
         color: "text-blue",
     },
     {
-        event: "CyberNight 2024",
+        event: "EFREI - CyberNight 2024",
         rank: "11th / 115",
-        category: "Category 'For Fun'",
+        category: "Team CTF - Cat. 'For Fun'",
         date: "Novembre 2024",
         icon: Medal, // Ranked
         color: "text-blue",
