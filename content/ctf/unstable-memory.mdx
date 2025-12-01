@@ -1,0 +1,126 @@
+---
+title: Write-Up - Unstable Memory (Medium)
+date: 2025-11-30T00:00:00.000Z
+description: Analyse post-mortem sur un dump mémoire d'une machine compromise.
+tags:
+  - Forensics
+  - Medium
+  - CTF Inter-École ENEDIS 2025
+---
+## 1. Contexte et Objectifs
+
+L'objectif de ce challenge est d'effectuer une analyse post-mortem sur un dump mémoire (`memory.raw`) d'une machine compromise. Nous devons extraire des artefacts volatils (processus, connexions, variables d'environnement, clés de registre) pour reconstruire le scénario d'attaque et identifier la configuration du laboratoire.
+
+Le challenge valide les réponses via un service distant type CLI accessible par **Netcat**.
+
+## 2. Analyse Approfondie étape par étape
+
+### Étape 1 : Identification du Système (OS & Kernel)
+
+**L'Objectif :** Déterminer la version exacte du système d'exploitation pour calibrer les outils d'analyse.
+
+**La commande :**
+```bash
+vol -f memory.raw windows.info
+```
+
+- **Fonctionnement technique :** Le plugin `windows.info` scanne la mémoire pour trouver la structure `_KUSER_SHARED_DATA` ou le bloc de version du débogueur (`KdVersionBlock`) du noyau NT (`ntkrnlmp.exe`).
+
+**L'Analyse des Résultats :** Le plugin retourne plusieurs informations contradictoires pour un œil non averti :
+- `NtMajorVersion` : 10
+- `NtMinorVersion` : 0
+- `KdVersionBlock` > `Major/Minor` : **15.22621**
+
+**Le Piège Technique :** Windows 10 et Windows 11 partagent la même version majeure interne (10.0). Pour les différencier, il faut regarder le _Build Number_ (ici ==22621==, correspondant à Windows 11 22H2). Le challenge demandait spécifiquement la valeur brute trouvée par le plugin dans le bloc de débogage, qui combine une version majeure interne héritée (15) et le build number.
+
+**Flag (Partie 1) :** `15.22621`
+
+### Étape 2 : Identification de l'Utilisateur Actif
+
+**L'Objectif :** Identifier quel compte utilisateur était connecté et actif lors de la capture de la mémoire, en excluant les comptes de service système (`SYSTEM`, `LOCAL SERVICE`, `NETWORK SERVICE`).
+
+**La commande :**
+```bash
+vol -f memory.raw windows.envars | grep USERNAME
+```
+
+- **Fonctionnement technique :** Le plugin `windows.envars` parcourt le PEB (Process Environment Block) de chaque processus pour lire les variables d'environnement chargées en mémoire utilisateur.
+
+**L'Analyse :** La sortie montre plusieurs processus critiques :
+- `csrss.exe`, `winlogon.exe` : Tournent sous `SYSTEM`.
+- `explorer.exe` (PID 4064) : Ce processus est le "Shell" de Windows (la barre des tâches, le bureau). Il est toujours lancé avec les droits de l'utilisateur connecté physiquement.
+- La variable `USERNAME` associée à `explorer.exe` est explicitement `User`.
+
+**Flag (Partie 2) :** `User`
+
+### Étape 3 : Extraction des Identifiants (SAM Database)
+
+**L'Objectif :** Récupérer le hash NTLM du mot de passe de l'utilisateur pour une potentielle attaque par "Pass-the-Hash" ou craquage offline.
+
+**La commande :**
+```bash
+vol -f memory.raw windows.hashdump
+```
+
+- **Fonctionnement technique :** Ce plugin localise la ruche de registre `SAM` (Security Account Manager) montée en mémoire virtuelle. Il extrait ensuite la clé de chiffrement système (SysKey) pour déchiffrer les entrées de la base et révéler les hashs.
+
+**L'Analyse :** La sortie est au format standard `JtR` (John the Ripper) : `User:1001:aad3b435b51404eeaad3b435b51404ee:8846f7eaee8fb117ad06bdd830b7586c:::`
+
+- **RID :** `1001` (Indique un compte utilisateur standard, les admins étant souvent 500).
+- **LM Hash :** `aad3b...` (Vide/Désactivé sur les Windows modernes).
+- **NT Hash :** `8846f7eaee8fb117ad06bdd830b7586c` (C'est le hash MD4 du mot de passe Unicode).
+
+**Flag (Partie 3) :** `8846f7eaee8fb117ad06bdd830b7586c`
+
+### Étape 4 : Identification de l'Infrastructure C2 (Persistence)
+
+**L'Objectif :** Trouver comment le malware communique avec l'extérieur. Les attaquants stockent parfois des configurations dans des endroits globaux pour que tous leurs processus malveillants puissent y accéder.
+
+**La commande :**
+```bash
+vol -f memory.raw windows.envars | grep "C2-LAB"
+```
+
+**L'Analyse :** Nous observons une anomalie majeure : une variable d'environnement nommée `C2-LAB` est présente dans **quasiment tous** les processus, y compris les processus système. Cela indique que la variable a été définie au niveau **Système** (et non Utilisateur), ce qui la rend persistante et héritable par tout nouveau processus. La valeur révèle l'URL du serveur de Command & Control.
+
+**Flag (Partie 4) :** `https://10.0.4.11:51181`
+
+### Étape 5 : Ciblage du Processus Utilisateur (PID)
+
+**L'Objectif :** Confirmer l'identifiant unique (PID) du processus `explorer.exe` identifié à l'étape 2.
+
+**La commande :**
+```bash
+vol -f memory.raw windows.pslist | grep explorer.exe
+```
+
+- **Fonctionnement technique :** `pslist` parcourt la liste chaînée `ActiveProcessLinks` dans la structure `EPROCESS` du noyau. C'est la méthode standard pour lister les processus vivants.
+
+**L'Analyse :** Le résultat confirme : `4064 explorer.exe ...` Le PID (Process ID) est la première colonne numérique.
+
+**Flag (Partie 5) :** `4064`
+
+### Étape 6 : Forensics Système de Fichiers (MFT)
+
+**L'Objectif :** Retrouver un fichier spécifique caché dans un dossier nommé `Target_A`.
+
+**La commande :**
+```bash
+vol -f memory.raw windows.filescan | grep "Target_A"
+```
+
+- **Fonctionnement technique :** Contrairement à un `dir` sur un disque dur, `filescan` ne regarde pas le disque. Il scanne la mémoire physique à la recherche de structures `_FILE_OBJECT` que le noyau Windows crée lorsqu'un fichier est ouvert ou manipulé. Cela permet de trouver des fichiers même s'ils ont été supprimés du disque, tant que leur trace réside en RAM.
+
+**L'Analyse :** Le grep filtre la sortie massive pour ne montrer que les chemins contenant le dossier cible. Le nom du fichier complet apparaît alors clairement.
+
+**Résultat :** Le fichier secret a été identifié avec son extension.
+
+## Conclusion Technique
+
+Ce challenge a démontré la puissance de l'analyse mémoire pour :
+
+1. Contourner les protections disque (fichiers ouverts uniquement en RAM).
+2. Récupérer des secrets chiffrés (Hashs NTLM dans la SAM).
+3. Comprendre la configuration de l'attaque (Variable d'environnement C2 globale).
+
+L'outil **Volatility 3** s'est révélé indispensable, notamment grâce à sa gestion automatique des profils (Symbol Tables) pour Windows 10/11.

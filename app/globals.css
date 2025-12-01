@@ -1,0 +1,179 @@
+@import "tailwindcss";
+@import "highlight.js/styles/github-dark.css";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-base: var(--color-base);
+  --color-mantle: var(--color-mantle);
+  --color-crust: var(--color-crust);
+  --color-surface0: var(--color-surface0);
+  --color-surface1: var(--color-surface1);
+  --color-subtext0: var(--color-subtext0);
+  --color-foreground: var(--color-foreground);
+  --color-blue: var(--color-blue);
+  --color-mauve: var(--color-mauve);
+  --color-red: var(--color-red);
+  --color-green: var(--color-green);
+  --color-yellow: var(--color-yellow);
+}
+
+/* Custom Prose Styling */
+@layer components {
+  .prose {
+    @apply text-subtext0 max-w-none;
+
+    /* Headers */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      @apply text-foreground font-bold mt-8 mb-4 scroll-mt-24;
+    }
+
+    h1 {
+      @apply text-4xl;
+    }
+
+    h2 {
+      @apply text-3xl border-b border-surface0 pb-2;
+    }
+
+    h3 {
+      @apply text-2xl;
+    }
+
+    /* Text Formatting */
+    strong {
+      @apply text-foreground font-bold;
+    }
+
+    em {
+      @apply text-mauve italic;
+    }
+
+    a {
+      @apply text-blue no-underline hover:underline;
+    }
+
+    /* Code */
+    code {
+      @apply bg-surface0 text-mauve px-1.5 py-0.5 rounded-md text-sm font-mono font-medium;
+    }
+
+    pre code {
+      @apply bg-transparent p-0 text-inherit;
+    }
+
+    /* Blockquotes */
+    blockquote {
+      @apply border-l-4 border-blue pl-4 italic text-subtext0 bg-surface0/20 py-2 pr-4 rounded-r-lg my-6;
+    }
+
+    /* Lists */
+    ul {
+      @apply list-disc list-outside ml-6 my-4;
+    }
+
+    ol {
+      @apply list-decimal list-outside ml-6 my-4;
+    }
+
+    li {
+      @apply my-1;
+    }
+
+    /* Tables */
+    table {
+      @apply w-full my-8 border-collapse;
+    }
+
+    th {
+      @apply text-left p-2 border-b border-surface0 text-foreground font-bold;
+    }
+
+    td {
+      @apply p-2 border-b border-surface0/50;
+    }
+
+    /* Images */
+    img {
+      @apply rounded-xl border border-surface0 my-8 mx-auto shadow-lg;
+    }
+
+    /* Horizontal Rule */
+    hr {
+      @apply border-surface0 my-8;
+    }
+  }
+}
+
+/* Catppuccin Latte (Light) */
+:root {
+  --color-base: #eff1f5;
+  --color-mantle: #e6e9ef;
+  --color-crust: #dce0e8;
+  --color-surface0: #ccd0da;
+  --color-surface1: #bcc0cc;
+  --color-subtext0: #6c6f85;
+  --color-foreground: #4c4f69;
+  --color-blue: #1e66f5;
+  --color-mauve: #8839ef;
+  --color-red: #d20f39;
+  --color-green: #40a02b;
+  --color-yellow: #df8e1d;
+}
+
+/* Custom Efrei Theme (Mid-Tone Slate) */
+[data-theme="efrei"] {
+  --color-base: #4a506a;
+  /* Mid-tone slate blue/grey */
+  --color-mantle: #3e4359;
+  /* Darker slate */
+  --color-crust: #323648;
+  /* Even darker */
+  --color-surface0: #5c627e;
+  /* Lighter for cards */
+  --color-surface1: #6e7490;
+  --color-subtext0: #bcc0cc;
+  /* Light grey for secondary text */
+  --color-foreground: #ffffff;
+  /* White text for high contrast */
+  --color-blue: #8aadf4;
+  /* Light blue accent */
+  --color-mauve: #c6a0f6;
+  --color-red: #ed8796;
+  --color-green: #a6da95;
+  --color-yellow: #eed49f;
+}
+
+/* Catppuccin Macchiato (Dark) */
+[data-theme="dark"] {
+  --color-base: #24273a;
+  --color-mantle: #1e2030;
+  --color-crust: #181926;
+  --color-surface0: #363a4f;
+  --color-surface1: #494d64;
+  --color-subtext0: #a5adcb;
+  --color-foreground: #cad3f5;
+  --color-blue: #8aadf4;
+  --color-mauve: #c6a0f6;
+  --color-red: #ed8796;
+  --color-green: #a6da95;
+  --color-yellow: #eed49f;
+}
+
+body {
+  color: var(--color-foreground);
+  background: linear-gradient(135deg, var(--color-mantle), var(--color-base));
+  background-attachment: fixed;
+  transition: background 0.3s ease, color 0.3s ease;
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}

@@ -1,0 +1,40 @@
+---
+title: Write-up - GalaticDB (Medium)
+date: 2025-11-30T00:00:00.000Z
+description: >-
+  Exploitation d'un binaire laissé sur une BDD via Stacked Queries (RCE +
+  Exfiltration).
+tags:
+  - Web
+  - Medium
+  - CTF Inter-École ENEDIS 2025
+---
+## 1. Contexte et Objectifs
+
+Une base de données de réfugiés galactiques contient des criminels cachés. L'objectif est d'accéder aux données protégées.
+
+## 2. Analyse du Code
+
+- Le code source (Node.js/Express) montre une vulnérabilité d'**Injection SQL** dans la route `/`.
+- Le paramètre `id` est concaténé directement dans la requête : `SELECT * FROM fugitives WHERE id=${id}`.
+- L'application se connecte à PostgreSQL avec l'utilisateur `postgres` (Superuser !).
+- Le flag est situé dans `/root/flag` (lisible uniquement par root), mais un binaire SUID `/readflag.c` est présent pour le lire.
+
+## 3. Exploitation
+
+L'exploitation s'est faite en deux étapes via des **Requêtes Empilées (Stacked Queries)** :
+
+1. **Exécution de Code à Distance (RCE)** :
+    - Utilisation de la commande `COPY ... FROM PROGRAM` (disponible pour le superuser PostgreSQL) pour charger et exécuter le binaire `/readflag`.
+    - Le résultat est stocké dans une table temporaire.
+    
+    - Payload : `1; DROP TABLE IF EXISTS pwn; CREATE TABLE pwn(res text); COPY pwn FROM PROGRAM '/readflag'; --`
+
+2. **Exfiltration** :
+    - Utilisation d'une injection `UNION SELECT` pour lire le contenu de la table temporaire `pwn` et l'afficher dans l'interface web (dans la colonne `name`).
+    
+    - Payload : `-1 UNION SELECT 1, res, '3', '4', '5', '6', '7', '8', '9' FROM pwn --`
+
+## Flag
+
+`HTB{P0sGr3SQL_15_vuLn3abl3_t0_Rc3_m4N_1ts_fun!!_5aa876285c7769e9d1a4b8eff254c6da}`

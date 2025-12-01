@@ -1,0 +1,40 @@
+---
+title: Write-Up CYBN 2024 - Test XSS Blabla
+date: '2024-11-28'
+description: >-
+  Challenge XSS "Test XSS Blabla" de la CYBN 2024. L'objectif est de trouver une
+  faille XSS sur une application web protégée.
+tags:
+  - CYBN2024
+---
+## 1. Contexte et Objectifs
+
+Challenge XSS "Test XSS Blabla" de la CYBN 2024. L'objectif est de trouver une faille XSS sur une application web protégée par un filtre strict bloquant les caractères spéciaux et les balises HTML.
+
+## 2. Le Challenge
+
+L'application présente un formulaire simple avec un champ de texte et un bouton "Envoyer". Le but est d'injecter du code JavaScript exécutable.
+Le filtre en place bloque :
+- Les caractères spéciaux.
+- Les balises HTML.
+- Les mots-clés JavaScript comme "alert" ou "script".
+
+## 3. Analyse & Exploitation
+
+Après analyse, il s'avère que le filtre ne bloque pas la méthode `String.fromCharCode()`. Cette fonction permet de construire une chaîne de caractères à partir de codes ASCII, contournant ainsi les restrictions sur les mots-clés.
+
+**Payload utilisé :**
+```js
+String.fromCharCode(97,108,101,114,116,40,39,88,83,83,39,41)
+```
+
+Ce code est équivalent à :
+```js
+alert('XSS')
+```
+
+## 4. Conclusion
+
+L'injection a réussi et la popup "XSS" s'est affichée. Ce challenge démontre que même avec des filtres, l'utilisation de méthodes alternatives d'encodage ou de construction de chaînes peut permettre de contourner les protections si elles ne sont pas exhaustives.
+
+**Moralité :** Toujours sanitiser les inputs et ne jamais faire confiance aux données utilisateur.

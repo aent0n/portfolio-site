@@ -1,0 +1,105 @@
+---
+title: Write-up - Infiltrate (Insane)
+date: 2025-11-30T00:00:00.000Z
+description: Compromission d'un système au travers d'une imprimante et de son serveur.
+tags:
+  - Hardware
+  - Insane
+  - CTF Inter-École ENEDIS 2025
+---
+## 1. Contexte et Objectifs
+Une corporation militaire privée (PMC) a mis la main sur des équipements sensibles liés à la fabrication d'armement. Ces équipements sont stockés dans une "Storage Room" spécifique au sein d'une installation sécurisée. L'objectif de la mission est d'identifier l'**ID exact de cette salle** pour permettre à une équipe au sol de récupérer le matériel.
+
+Le seul point d'accès réseau disponible est une machine exposant deux ports, dont l'un est décrit comme un "service d'impression".
+
+## Phase 1 : Reconnaissance et Énumération
+
+La première étape consiste à identifier les services qui tournent sur l'adresse IP cible `83.136.251.105`.
+
+### Scan Nmap
+
+L'outil `nmap` est utilisé pour scanner les ports fournis dans la description du challenge (`50913` et `36607`).
+
+```bash
+nmap -sV -sC -p 50913,36607 83.136.251.105
+```
+
+**Résultats du scan :**
+
+- **Port 50913 (TCP) :** Le service est identifié comme **RabbitMQ Management** via HTTP (`Cowboy httpd`). C'est une interface web d'administration pour un gestionnaire de files d'attente de messages.
+
+- **Port 36607 (TCP) :** Le service est marqué comme `unknown` (inconnu). Les sondes HTTP de nmap reçoivent des réponses bizarres (`?`), ce qui est caractéristique d'un service qui ne parle pas HTTP mais un protocole texte brut propriétaire. Dans le contexte d'un challenge hardware/imprimante, cela pointe vers le protocole **PJL (Printer Job Language)** en mode "Raw" (souvent utilisé sur le port 9100 par défaut, mais ici déplacé).
+
+## Phase 2 : Intrusion sur l'Imprimante (Port 36607)
+
+Le port 36607 est notre porte d'entrée physique simulée. Le protocole PJL est notoirement vulnérable car il permet souvent d'accéder au système de fichiers de l'imprimante sans authentification.
+
+### Outil : PRET (Printer Exploitation Toolkit)
+
+Nous utilisons l'outil **PRET** (`pret.py` - **Pr**inter **E**xploitation **T**oolkit) pour interagir avec ce service.
+
+1. **Connexion :**
+```python
+    python3 pret.py 83.136.251.105:36607 pjl
+```
+
+_L'outil établit la connexion et nous donne un shell interactif `>`._
+
+2. **Exploration du Système de Fichiers :**
+    - La commande `ls` révèle un dossier `pjl`.
+    - En naviguant dans `pjl/jobs/`, nous trouvons un fichier nommé `queued`.
+    - La tentative de lecture (`cat queued` ou `get queued`) montre que le fichier ne contient que des sauts de ligne (0 octets de données utiles). Cela indique que le job d'impression contenant potentiellement l'info est bloqué ou stocké ailleurs.
+
+3. **Fuite d'Information (NVRAM Dump) :**
+    - Les imprimantes stockent souvent leurs configurations sensibles (mots de passe wifi, accès services tiers) dans la mémoire non-volatile (NVRAM).
+    - La commande `nvram dump` dans PRET permet d'extraire cette mémoire.
+    
+    - **Problème rencontré :** L'outil PRET (en version Python 3) a un bug connu lors de l'écriture du fichier de dump (`TypeError: a bytes-like object is required, not 'str'`).
+    - **Correction du Bug :** Nous avons dû patcher le fichier `pjl.py` de PRET pour qu'il ouvre/écrive le fichier en mode binaire correctement.
+    
+    - **Exécution :** Une fois patché, le dump a réussi, créant un fichier local `nvram/83.136.251.105:36607`.
+
+## Phase 3 : Analyse Forensique du Dump NVRAM
+
+Le fichier NVRAM dumpé est un binaire brut. Nous devons y chercher des informations textuelles lisibles.
+### Extraction des Credentials
+
+L'utilisation de la commande `strings` ou `hexdump` permet de lire le contenu.
+
+1. **Recherche de l'utilisateur :**
+    - En cherchant des chaînes autour de "http" ou "user", nous n'avons rien trouvé de probant initialement à cause du formatage.
+    - L'analyse visuelle via `hexdump -C` a montré que la fin du fichier contenait une chaîne de caractères très suspecte, séparée par des octets nuls ou de padding.
+
+2. **Découverte du Mot de Passe :**
+    - À l'offset final du fichier, la chaîne `d.F.g.h.C.x.v.S.o.0` (avec des points représentant des null bytes ou un encodage large) est apparue.
+    - Après nettoyage, cela donne le mot de passe : **`dFghCxvSo0`**.
+
+3. **Identification du Login :**
+    - Nous avons supposé (et confirmé par test) que ce mot de passe était associé à l'utilisateur par défaut ou administrateur. Le login **`admin` + `dFghCxvSo0`** a fonctionné.
+
+## Phase 4 : Mouvement Latéral vers RabbitMQ (Port 50913)
+
+L'imprimante est un "client" qui doit se connecter à un serveur pour récupérer ses travaux d'impression. Le serveur est le service **RabbitMQ** identifié au début sur le port **50913**.
+
+1. **Accès Web :**
+    - Connexion à l'interface d'administration : `http://83.136.251.105:50913`.
+    - Utilisation des identifiants extraits de l'imprimante : `admin` / `dFghCxvSo0`.
+    - L'accès est validé !
+
+2. **Inspection des Files d'Attente (Queues) :**
+    - L'onglet "Queues" liste plusieurs files : `factory_idle`, `automation`, `batch_process`.
+    - La file `factory_idle` contenait 6 messages en attente ("Ready").
+
+3. **Récupération du Flag :**
+    - Dans l'interface de la queue `factory_idle`, nous avons utilisé le bouton "Get Message(s)".
+    
+    - **Option Critique :** Nous avons réglé "Ack Mode" sur "Nack message requeue true" pour lire le message sans le supprimer du serveur (pratique pour ne pas casser le challenge en cas d'instance globale - ici inutile en réalité car challenge Docker redéployable).
+    - Le payload de l'un des messages affichait le flag en clair.
+
+## Conclusion
+
+Le challenge simulait une attaque IoT réaliste où un périphérique périphérique (imprimante) mal sécurisé sert de pivot pour compromettre le réseau interne. L'imprimante contenait les identifiants d'un service critique (RabbitMQ) en clair dans sa mémoire NVRAM, permettant à l'attaquant de remonter à la source de l'information.
+
+## Flag Final
+
+`HTB{1nf0_d1scl0sur3_t0_1nf1ltr4t10N}`

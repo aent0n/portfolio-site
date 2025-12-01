@@ -1,0 +1,137 @@
+---
+title: Write-Up - VaultAccess (Medium)
+date: 2025-11-30T00:00:00.000Z
+description: Bruteforce de clé de sécurité dans une application scannant des tags NFC.
+tags:
+  - Mobile
+  - Medium
+  - CTF Inter-École ENEDIS 2025
+---
+## 1. Contexte et Objectifs
+
+Nous sommes face à une application Android (`VaultAccess.apk`) utilisée par des agents pour accéder à un coffre-fort sécurisé. L'authentification repose sur un badge NFC physique. Notre but est de **comprendre l'algorithme de génération de clé** pour déchiffrer le contenu du coffre sans posséder le badge.
+
+## 2. Analyse Statique (Reverse Engineering)
+
+Nous utilisons **JADX-GUI** pour décompiler le bytecode Dalvik (`.dex`) contenu dans l'APK vers un code Java lisible.
+
+### Phase A : Identification du point d'entrée
+En explorant le fichier `AndroidManifest.xml` (qui définit la structure de l'app), nous trouvons l'activité principale : `MainActivity`. Dans le code de `MainActivity.java`, la méthode `processNFCTag(Tag tag)` est déclenchée lors d'un scan NFC.
+
+- Elle extrait l'ID du badge : `byte[] tagId = tag.getId();`
+- Elle appelle la classe critique : `FlagDecryptor`.
+
+### Phase B : Analyse de la Classe `FlagDecryptor`
+C'est ici que réside toute la logique de sécurité. Nous avons identifié deux méthodes critiques :
+#### 1. La Vulnérabilité (Réduction d'Entropie)
+La méthode `generateKeyFromTagId` est censée créer une clé unique à partir de l'ID du badge.
+
+```java
+// Code Java reconstitué
+public static int generateKeyFromTagId(byte[] tagId) {
+    long key = 0;
+    // Boucle sur chaque octet de l'ID
+    for (byte b : tagId) {
+        // b & UByte.MAX_VALUE convertit l'octet signé (-128 à 127) en non-signé (0 à 255)
+        key += b & UByte.MAX_VALUE; 
+    }
+    // Formule d'obfuscation mathématique
+    return (int) (268435455 & ((3735928559L * key) % 4294967296L));
+}
+```
+
+**Analyse Cryptographique de la Faille :** Le développeur a commis une erreur : au lieu d'utiliser les octets de l'ID tels quels (ce qui donnerait des milliards de combinaisons), il fait une **somme**.
+
+- Un badge NFC standard (Mifare) a un ID de 4 ou 7 octets.
+- Valeur maximale d'un octet : 255.
+- Somme maximale pour 7 octets : `7 * 255 = 1785`.
+
+- **Conclusion :** L'espace de clés (Key Space) est réduit de $2^{56}$ (pour 7 octets) à seulement ~1800 possibilités. C'est trivial à brute-forcer.
+
+#### 2. L'Algorithme de Déchiffrement
+
+La méthode `decryptFlag(int key)` montre comment la clé est utilisée :
+
+1. **Key Derivation :** L'entier `key` (la somme calculée) est converti en String, puis haché avec **MD5**.
+2. **Cipher :** Ce hash MD5 (16 octets) devient la clé secrète pour **AES**.
+3. **Mode :** AES/ECB/PKCS5Padding (Electronic Codebook).
+4. **Target :** La chaîne chiffrée est stockée en Base64 dans la constante `ENCRYPTED_FLAG`.
+
+## 3. Développement de l'Exploit (Solver)
+
+Nous allons écrire un script Python qui simule l'application. Au lieu de scanner un badge, nous allons tester toutes les sommes possibles (de 0 à 5000) jusqu'à trouver celle qui déchiffre un message lisible (du moins, commençant par `HTB`).
+
+### Le Script `solve.py` détaillé
+
+```python
+import base64
+import hashlib
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+
+# 1. Extraction de la charge utile (Payload)
+# Copiée depuis JADX.
+ENCRYPTED_FLAG_B64 = "DhZQ+PbHicD0/lEVXzS7AZA1dItzaibLQgbDHXA1a2jQLawh2OmfICdAjxSz5z/A"
+
+# Nettoyage de la chaîne Base64
+ENCRYPTED_FLAG_B64 = ENCRYPTED_FLAG_B64.strip().replace(" ", "")
+
+def attempt_decrypt(int_key):
+    """
+    Tente de déchiffrer le flag avec une clé candidate (int_key).
+    Retourne le texte clair si réussi, None sinon.
+    """
+    try:
+        # Étape 1 : Dérivation de la clé (Identique au Java)
+        # On convertit l'entier en chaîne de caractères
+        key_string = str(int_key)
+        # On encode en UTF-8 pour le hachage
+        key_bytes_utf8 = key_string.encode('utf-8')
+        
+        # On calcule le MD5 pour obtenir une clé de 128 bits (16 octets)
+        md = hashlib.md5()
+        aes_key = md.update(key_bytes_utf8)
+        aes_key = md.digest()
+        
+        # Étape 2 : Initialisation du chiffrement AES
+        # Mode ECB (Electronic Codebook) - Pas d'IV nécessaire
+        cipher = AES.new(aes_key, AES.MODE_ECB)
+        
+        # Étape 3 : Déchiffrement et suppression du Padding (PKCS5)
+        encrypted_bytes = base64.b64decode(ENCRYPTED_FLAG_B64)
+        decrypted_data = cipher.decrypt(encrypted_bytes)
+        decrypted_text = unpad(decrypted_data, AES.block_size).decode('utf-8')
+        
+        return decrypted_text
+    except Exception:
+        # Si le padding est invalide ou l'utf-8 cassé, ce n'est pas la bonne clé
+        return None
+
+print("[*] Démarrage de l'attaque par force brute sur la somme...")
+
+# Boucle de Brute-Force (Key Space Exhaustion)
+# On teste large (0 à 5000) pour couvrir tous les cas possibles d'ID NFC
+for sum_val in range(5000):
+    
+    # Étape 0 : Reproduction de l'obfuscation mathématique du Java
+    # (int) (268435455 & ((3735928559L * key) % 4294967296L));
+    math_step_1 = (3735928559 * sum_val) % 4294967296
+    final_int_key = 268435455 & math_step_1
+    
+    # Test de la clé
+    flag = attempt_decrypt(final_int_key)
+    
+    # Validation du succès
+    if flag and "HTB{" in flag:
+        print(f"\n[+] SUCCÈS ! Flag trouvé.")
+        print(f"[+] Somme d'octets originale : {sum_val}")
+        print(f"[+] Clé entière générée : {final_int_key}")
+        print(f"[+] FLAG : {flag}")
+        break
+else:
+    print("[-] Échec. Aucune clé valide trouvée.")
+```
+
+## 4. Conclusion
+
+L'exécution du script est instantanée (< 0.1s). Ce challenge illustre parfaitement pourquoi il ne faut **jamais créer ses propres protocoles de cryptographie** (Rolling your own crypto). La simple opération de somme a détruit la sécurité du système, rendant l'utilisation d'AES inutile face à une attaque par force brute sur l'espace de clés réduit.
