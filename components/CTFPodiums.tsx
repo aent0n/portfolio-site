@@ -7,7 +7,7 @@ import { useLanguage } from "@/lib/context";
 const podiums = [
     {
         event: "CTF ENEDIS Inter écoles",
-        rank: "2nd ex aequo / 33",
+        rank: "2nd ex æquo / 33",
         category: "Team CTF",
         date: "Novembre 2025",
         icon: Trophy, // Podium
