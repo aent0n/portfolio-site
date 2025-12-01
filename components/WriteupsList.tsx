@@ -31,12 +31,12 @@ export default function WriteupsList({ posts }: { posts: Post[] }) {
                         href={`/writeups/${post.slug}`}
                         className="block rounded-2xl border border-surface0 bg-surface0/50 p-8 transition-colors hover:bg-surface0 hover:border-mauve/30"
                     >
-                        <div className="mb-2 flex items-center gap-4 text-sm text-subtext0">
+                        <div className="mb-2 flex flex-wrap items-center gap-4 text-sm text-subtext0">
                             <time dateTime={post.frontmatter.date}>{post.frontmatter.date}</time>
                             {post.frontmatter.tags && (
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
                                     {post.frontmatter.tags.map((tag) => (
-                                        <span key={tag} className="rounded-full bg-blue/10 px-2 py-0.5 text-xs font-medium text-blue">
+                                        <span key={tag} className="rounded-full bg-blue/10 px-2 py-0.5 text-xs font-medium text-blue whitespace-nowrap">
                                             {tag}
                                         </span>
                                     ))}
