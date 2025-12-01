@@ -9,7 +9,7 @@ export default function Hero() {
     const { t } = useLanguage();
 
     return (
-        <section className="flex min-h-[80vh] flex-col items-center justify-center text-center">
+        <section className="flex min-h-[80vh] flex-col items-center justify-center text-center px-4">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

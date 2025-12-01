@@ -130,28 +130,7 @@
   --color-yellow: #df8e1d;
 }
 
-/* Custom Efrei Theme (Mid-Tone Slate) */
-[data-theme="efrei"] {
-  --color-base: #4a506a;
-  /* Mid-tone slate blue/grey */
-  --color-mantle: #3e4359;
-  /* Darker slate */
-  --color-crust: #323648;
-  /* Even darker */
-  --color-surface0: #5c627e;
-  /* Lighter for cards */
-  --color-surface1: #6e7490;
-  --color-subtext0: #bcc0cc;
-  /* Light grey for secondary text */
-  --color-foreground: #ffffff;
-  /* White text for high contrast */
-  --color-blue: #8aadf4;
-  /* Light blue accent */
-  --color-mauve: #c6a0f6;
-  --color-red: #ed8796;
-  --color-green: #a6da95;
-  --color-yellow: #eed49f;
-}
+
 
 /* Catppuccin Macchiato (Dark) */
 [data-theme="dark"] {

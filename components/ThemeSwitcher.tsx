@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Moon, Sun, Palette } from "lucide-react";
+import { Moon, Sun } from "lucide-react"; // Removed Palette import
 import { useEffect, useState } from "react";
 
 export default function ThemeSwitcher() {
@@ -12,27 +12,21 @@ export default function ThemeSwitcher() {
         setMounted(true);
     }, []);
 
+    const toggleTheme = () => {
+        setTheme(theme === "dark" ? "light" : "dark");
+    };
+
     if (!mounted) {
         return null;
     }
 
     return (
         <button
-            onClick={() => {
-                if (theme === "light") setTheme("dark");
-                else if (theme === "dark") setTheme("efrei");
-                else setTheme("light");
-            }}
-            className="rounded-full bg-surface0/50 p-2 text-surface1 transition-colors hover:bg-surface0 hover:text-foreground"
+            onClick={toggleTheme}
+            className="rounded-full p-2 text-subtext0 transition-colors hover:bg-surface0 hover:text-foreground" // Updated className
             aria-label="Toggle theme"
         >
-            {theme === "dark" ? (
-                <Moon className="h-5 w-5" />
-            ) : theme === "efrei" ? (
-                <Palette className="h-5 w-5" />
-            ) : (
-                <Sun className="h-5 w-5" />
-            )}
+            {theme === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
         </button>
     );
 }

@@ -8,6 +8,7 @@ const projectsData = [
     {
         id: "steg",
         tags: ["Python", "Steganography", "Forensics"],
+        github: "https://github.com/aent0n/StegEngineV2",
         category: "sec",
     },
     {
