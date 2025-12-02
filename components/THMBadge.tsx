@@ -75,25 +75,25 @@ export default function THMBadge() {
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-xl bg-base/50 p-3">
-                    <div className="mb-1 flex items-center gap-2 text-xs text-surface1">
+                    <div className="mb-1 flex items-center gap-2 text-xs text-subtext0">
                         <Trophy className="h-3 w-3" /> Rank
                     </div>
                     <div className="text-lg font-bold text-foreground">{data?.userRank.toLocaleString()}</div>
                 </div>
                 <div className="rounded-xl bg-base/50 p-3">
-                    <div className="mb-1 flex items-center gap-2 text-xs text-surface1">
+                    <div className="mb-1 flex items-center gap-2 text-xs text-subtext0">
                         <Zap className="h-3 w-3" /> Points
                     </div>
                     <div className="text-lg font-bold text-foreground">{data?.points.toLocaleString()}</div>
                 </div>
                 <div className="rounded-xl bg-base/50 p-3">
-                    <div className="mb-1 flex items-center gap-2 text-xs text-surface1">
+                    <div className="mb-1 flex items-center gap-2 text-xs text-subtext0">
                         <Target className="h-3 w-3" /> Rooms
                     </div>
                     <div className="text-lg font-bold text-foreground">{data?.completedRooms ?? "N/A"}</div>
                 </div>
                 <div className="rounded-xl bg-base/50 p-3">
-                    <div className="mb-1 flex items-center gap-2 text-xs text-surface1">
+                    <div className="mb-1 flex items-center gap-2 text-xs text-subtext0">
                         <Users className="h-3 w-3" /> Percentile
                     </div>
                     <div className="text-lg font-bold text-foreground">Top 1%</div>

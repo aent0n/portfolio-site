@@ -17,7 +17,7 @@ export default function ContactPage() {
                 className="text-center"
             >
                 <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl text-foreground">{t("contact.title")}</h1>
-                <p className="mb-12 max-w-2xl text-lg text-surface1">
+                <p className="mb-12 max-w-2xl text-lg text-subtext0">
                     {t("contact.subtitle")}
                 </p>
 
@@ -30,16 +30,16 @@ export default function ContactPage() {
                         contact@aadam.mozmail.com
                     </Link>
 
-                    <p className="text-surface1">
+                    <p className="text-subtext0">
                         {t("contact.location")} | +33 7 62 69 55 44
                     </p>
 
                     <div className="flex gap-8">
-                        <Link href="https://github.com/aent0n" target="_blank" className="text-surface1 hover:text-foreground transition-colors">
+                        <Link href="https://github.com/aent0n" target="_blank" className="text-subtext0 hover:text-foreground transition-colors">
                             <Github className="h-8 w-8" />
                             <span className="sr-only">GitHub</span>
                         </Link>
-                        <Link href="https://www.linkedin.com/in/anton-adam/" target="_blank" className="text-surface1 hover:text-foreground transition-colors">
+                        <Link href="https://www.linkedin.com/in/anton-adam/" target="_blank" className="text-subtext0 hover:text-foreground transition-colors">
                             <Linkedin className="h-8 w-8" />
                             <span className="sr-only">LinkedIn</span>
                         </Link>

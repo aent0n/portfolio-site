@@ -33,7 +33,7 @@ export default function ProjectCard({ project, index }: { project: Project; inde
                             </Link>
                         ) : !project.demo && (
                             <div className="group/tooltip relative">
-                                <Lock className="h-5 w-5 text-surface1 cursor-not-allowed" />
+                                <Lock className="h-5 w-5 text-subtext0 cursor-not-allowed" />
                                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-surface0 px-2 py-1 text-xs text-subtext0 opacity-0 transition-opacity group-hover/tooltip:opacity-100">
                                     Source Private/Legacy
                                 </span>

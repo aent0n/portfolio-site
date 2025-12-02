@@ -19,7 +19,7 @@ export default function LanguageSwitcher() {
                 <button
                     key={lang.code}
                     onClick={() => setLanguage(lang.code)}
-                    className={`relative rounded-full px-3 py-1 text-xs font-medium transition-colors ${language === lang.code ? "text-base" : "text-surface1 hover:text-foreground"
+                    className={`relative rounded-full px-3 py-1 text-xs font-medium transition-colors ${language === lang.code ? "text-foreground" : "text-subtext0 hover:text-foreground"
                         }`}
                 >
                     {language === lang.code && (

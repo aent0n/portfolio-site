@@ -17,7 +17,7 @@ export default function PostHeader({ title, date, tags }: PostHeaderProps) {
         <>
             <Link
                 href="/writeups"
-                className="mb-8 inline-flex items-center text-sm text-surface1 hover:text-foreground"
+                className="mb-8 inline-flex items-center text-sm text-subtext0 hover:text-foreground"
             >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t("writeups.back")}

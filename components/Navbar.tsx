@@ -85,7 +85,7 @@ export default function Navbar() {
                                 key={item.path}
                                 href={item.path}
                                 className={cn(
-                                    "text-base font-medium transition-colors hover:text-foreground",
+                                    "text-[1rem] font-medium transition-colors hover:text-foreground",
                                     pathname === item.path ? "text-foreground" : "text-subtext0"
                                 )}
                                 onClick={() => setIsMobileMenuOpen(false)}
