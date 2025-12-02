@@ -4,25 +4,7 @@ import { useState } from "react";
 import ProjectCard from "@/components/ProjectCard";
 import { useLanguage } from "@/lib/context";
 
-const projectsData = [
-    {
-        id: "steg",
-        tags: ["Python", "Steganography", "Forensics"],
-        github: "https://github.com/aent0n/StegEngineV2",
-        category: "sec",
-    },
-    {
-        id: "queens",
-        tags: ["Python", "AI", "OCR", "CSP"],
-        category: "web",
-    },
-    {
-        id: "ecg",
-        tags: ["C++", "Arduino", "Signal Processing"],
-        category: "tools",
-    },
-
-];
+import { projectsData } from "@/lib/data";
 
 export default function ProjectsPage() {
     const { t } = useLanguage();

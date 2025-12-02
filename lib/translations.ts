@@ -15,7 +15,7 @@ export const translations = {
             status: "À l'écoute d'opportunités",
             title_prefix: "Anton ADAM",
             title_suffix: "Étudiant en Cybersécurité & IA",
-            description: "M1 CS&AI à l'EFREI. Je souhaite orienter mon parcours vers l'investigation numérique et la sécurité offensive.",
+            description: "M1 CS&AI à l'EFREI. Je souhaite orienter mon parcours vers l'investigation numérique (DFIR) et la sécurité offensive.",
             view_projects: "Voir les projets",
             read_writeups: "Lire les write-ups",
         },
@@ -27,7 +27,7 @@ export const translations = {
             skills: {
                 cyber: {
                     title: "Cybersécurité",
-                    desc: "Wireshark, Nmap, BurpSuite, Metasploit, SqlMap, ELK Stack, Forensics.",
+                    desc: "Outils CTF (Wireshark, Nmap, BurpSuite), OSINT & Forensics.",
                 },
                 sys: {
                     title: "Systèmes & Cloud",
@@ -51,6 +51,22 @@ export const translations = {
                     title: "Impression 3D",
                     desc: "Modélisation et impression FDM.",
                 },
+            },
+            achievements: {
+                steg: { title: "Stéganographie Image", desc: "LSB & Métadonnées (tEXt chunks) pour PNGs" },
+                forensics: { title: "Forensics", desc: "Analyse mémoire avec Volatility 3 en CTF" },
+                pentest: { title: "Pentesting", desc: "Utilisation de Metasploit (Apprentissage continu)" },
+                elk: { title: "ELK Stack", desc: "Mise en place & Monitoring (Expérience de stage)" },
+                linux: { title: "Linux Hardening", desc: "Navigation avancée & sécurisation (NixOS occasionnel)" },
+                docker: { title: "Docker", desc: "Déploiement d'outils à la volée" },
+                cloud: { title: "Ressources Cloud", desc: "Gestion de ressources (Contexte académique)" },
+                python: { title: "Scripting Python", desc: "Scripts d'automatisation & logique algorithmique" },
+                web: { title: "Dev Web", desc: "HTML/CSS/JS & PHP (Architecture de services)" },
+                ai_dev: { title: "Dev Augmenté par IA", desc: "Prototypage rapide & génération de logique via LLMs" },
+                problem_solving: { title: "Résolution de Problèmes", desc: "Approche analytique des challenges CTF" },
+                adaptability: { title: "Adaptabilité", desc: "Apprentissage rapide de nouveaux outils (ex: React via IA)" },
+                fpv_build: { title: "Construction Drone", desc: "Assemblage complet, soudure & programmation électronique" },
+                "3d_design": { title: "Conception 3D", desc: "Design sur Fusion360 & calibration d'imprimantes" }
             },
         },
         projects: {
@@ -118,7 +134,7 @@ export const translations = {
             skills: {
                 cyber: {
                     title: "Cybersecurity",
-                    desc: "Wireshark, Nmap, BurpSuite, Metasploit, SqlMap, ELK Stack, Forensics.",
+                    desc: "CTF Tools (Wireshark, Nmap, BurpSuite), OSINT & Forensics.",
                 },
                 sys: {
                     title: "Systems & Cloud",
@@ -142,6 +158,22 @@ export const translations = {
                     title: "3D Printing",
                     desc: "Modeling and FDM printing.",
                 },
+            },
+            achievements: {
+                steg: { title: "Image Steganography", desc: "LSB & Metadata (tEXt chunks) for PNGs" },
+                forensics: { title: "Forensics", desc: "Memory analysis with Volatility 3 during CTFs" },
+                pentest: { title: "Pentesting", desc: "Metasploit usage (Continuous learning)" },
+                elk: { title: "ELK Stack", desc: "Setup & Monitoring (Internship experience)" },
+                linux: { title: "Linux Hardening", desc: "Advanced navigation & hardening (Occasional NixOS)" },
+                docker: { title: "Docker", desc: "On-the-fly tool deployment" },
+                cloud: { title: "Cloud Resources", desc: "Resource management (Academic context)" },
+                python: { title: "Python Scripting", desc: "Automation scripts & algorithmic logic" },
+                web: { title: "Web Dev", desc: "HTML/CSS/JS & PHP (Service architecture)" },
+                ai_dev: { title: "AI-Augmented Dev", desc: "Rapid prototyping & logic generation via LLMs" },
+                problem_solving: { title: "Problem Solving", desc: "Analytical approach to CTF challenges" },
+                adaptability: { title: "Adaptability", desc: "Quick learning of new tools (e.g., React via AI)" },
+                fpv_build: { title: "Drone Building", desc: "Full assembly, soldering & electronic programming" },
+                "3d_design": { title: "3D Design", desc: "Fusion360 design & printer calibration" }
             },
         },
         projects: {
@@ -209,7 +241,7 @@ export const translations = {
             skills: {
                 cyber: {
                     title: "Cybersicherheit",
-                    desc: "Wireshark, Nmap, BurpSuite, Metasploit, SqlMap, ELK Stack, Forensik.",
+                    desc: "CTF-Tools (Wireshark, Nmap, BurpSuite), OSINT & Forensik.",
                 },
                 sys: {
                     title: "Systeme & Cloud",
@@ -233,6 +265,22 @@ export const translations = {
                     title: "3D-Druck",
                     desc: "Modellierung und FDM-Druck.",
                 },
+            },
+            achievements: {
+                steg: { title: "Bild-Steganographie", desc: "LSB & Metadaten (tEXt chunks) für PNGs" },
+                forensics: { title: "Forensik", desc: "Speicheranalyse mit Volatility 3 bei CTFs" },
+                pentest: { title: "Pentesting", desc: "Nutzung von Metasploit (Ständiges Lernen)" },
+                elk: { title: "ELK Stack", desc: "Einrichtung & Monitoring (Praktikumserfahrung)" },
+                linux: { title: "Linux-Härtung", desc: "Fortgeschrittene Navigation & Härtung (Gelegentlich NixOS)" },
+                docker: { title: "Docker", desc: "Bereitstellung von Tools im laufenden Betrieb" },
+                cloud: { title: "Cloud-Ressourcen", desc: "Ressourcenmanagement (Akademischer Kontext)" },
+                python: { title: "Python-Scripting", desc: "Automatisierungsskripte & algorithmische Logik" },
+                web: { title: "Web-Entwicklung", desc: "HTML/CSS/JS & PHP (Service-Architektur)" },
+                ai_dev: { title: "KI-gestützte Entwicklung", desc: "Schnelles Prototyping & Logikgenerierung durch LLMs" },
+                problem_solving: { title: "Problemlösung", desc: "Analytischer Ansatz bei CTF-Challenges" },
+                adaptability: { title: "Anpassungsfähigkeit", desc: "Schnelles Erlernen neuer Tools (z.B. React via KI)" },
+                fpv_build: { title: "Drohnenbau", desc: "Komplette Montage, Löten & elektronische Programmierung" },
+                "3d_design": { title: "3D-Design", desc: "Design in Fusion360 & Druckerkalibrierung" }
             },
         },
         projects: {

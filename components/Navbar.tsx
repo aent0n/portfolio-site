@@ -23,7 +23,7 @@ export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
-        <header className="fixed top-0 z-50 w-full border-b border-surface0 bg-mantle/50 backdrop-blur-md">
+        <header className="fixed top-0 z-50 w-full border-b border-surface0/50 bg-mantle/70 backdrop-blur-xl supports-[backdrop-filter]:bg-mantle/60">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
                 <Link href="/" className="text-xl font-bold tracking-tighter text-foreground">
                     Anton ADAM<span className="text-blue">.</span>

@@ -39,7 +39,7 @@ export default function LatestUpdates({ posts }: { posts: Post[] }) {
                         >
                             <Link
                                 href={`/writeups/${post.slug}`}
-                                className="group block h-full rounded-2xl border border-surface0/50 bg-surface0/10 p-6 backdrop-blur-sm transition-all hover:-translate-y-1 hover:border-blue/50 hover:bg-surface0/20 hover:shadow-xl hover:shadow-blue/5"
+                                className="group block h-full rounded-2xl border border-surface0/50 bg-surface0/5 p-6 backdrop-blur-md transition-all hover:-translate-y-1 hover:border-blue/50 hover:bg-surface0/10 hover:shadow-2xl hover:shadow-blue/10"
                             >
                                 <div className="mb-4 flex items-center justify-between">
                                     <span className="rounded-full bg-blue/10 px-3 py-1 text-xs font-medium text-blue capitalize">

@@ -114,48 +114,80 @@
   }
 }
 
-/* Catppuccin Latte (Light) */
+/* User Custom Palette (Teal/Cyan/Gold) */
 :root {
-  --color-base: #eff1f5;
-  --color-mantle: #e6e9ef;
-  --color-crust: #dce0e8;
-  --color-surface0: #ccd0da;
-  --color-surface1: #bcc0cc;
-  --color-subtext0: #6c6f85;
-  --color-foreground: #4c4f69;
-  --color-blue: #1e66f5;
-  --color-mauve: #8839ef;
-  --color-red: #d20f39;
-  --color-green: #40a02b;
-  --color-yellow: #df8e1d;
+  /* Base Background: Dark Teal */
+  --color-base: #1a535c;
+  --color-mantle: #14424a;
+  /* 20% darker */
+  --color-crust: #0f3137;
+  /* 30% darker */
+
+  --color-surface0: #256873;
+  /* Lighter teal */
+  --color-surface1: #307d8a;
+
+  --color-subtext0: #b8e0e0;
+  /* Light teal-ish gray for secondary text */
+
+  --color-foreground: #f7fff7;
+  /* Mint Cream */
+
+  /* Accents */
+  --color-blue: #4ecdc4;
+  /* Strong Cyan (Primary Accent) */
+  --color-mauve: #ffe66d;
+  /* Royal Gold (Secondary Accent) */
+  --color-red: #ff6b6b;
+  /* Complementary Red */
+  --color-green: #4ecdc4;
+  /* Cyan */
+  --color-yellow: #ffe66d;
+  /* Royal Gold */
 }
 
+/* Light Theme Override (Clean Technical - Softened) */
+[data-theme="light"] {
+  --color-base: #eef5f5;
+  /* Slightly darker/softer than Mint Cream to reduce glare */
+  --color-mantle: #e0ebeb;
+  --color-crust: #d1e0e0;
+  --color-surface0: #ffffff;
+  /* Keep surface white for cards to pop against the softer bg */
+  --color-surface1: #e0f2f1;
+  --color-subtext0: #546e7a;
+  --color-foreground: #1a535c;
+  /* Dark Teal Text */
 
-
-/* Catppuccin Macchiato (Dark) */
-[data-theme="dark"] {
-  --color-base: #24273a;
-  --color-mantle: #1e2030;
-  --color-crust: #181926;
-  --color-surface0: #363a4f;
-  --color-surface1: #494d64;
-  --color-subtext0: #a5adcb;
-  --color-foreground: #cad3f5;
-  --color-blue: #8aadf4;
-  --color-mauve: #c6a0f6;
-  --color-red: #ed8796;
-  --color-green: #a6da95;
-  --color-yellow: #eed49f;
+  --color-blue: #2a8a94;
+  /* Darker Cyan for better readability on light bg */
+  --color-mauve: #d9b310;
+  /* Darker Gold for better contrast */
+  --color-red: #dc2626;
+  --color-green: #059669;
+  --color-yellow: #d97706;
 }
 
 body {
   color: var(--color-foreground);
-  background: linear-gradient(135deg, var(--color-mantle), var(--color-base));
-  background-attachment: fixed;
-  transition: background 0.3s ease, color 0.3s ease;
+  background-color: var(--color-base);
+  transition: color 0.3s ease, background-color 0.3s ease;
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
   min-height: 100vh;
+}
+
+/* Dark Mode Background: Deep Teal Gradient */
+:root:not([data-theme="light"]) body {
+  background-image:
+    linear-gradient(to bottom right, var(--color-base), var(--color-mantle));
+  background-attachment: fixed;
+}
+
+/* Light Mode Background: Clean Mint */
+[data-theme="light"] body {
+  background-color: var(--color-base);
+  background-image: none;
 }
 
 @utility text-balance {
