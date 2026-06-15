@@ -25,6 +25,7 @@ Après avoir authentifié notre session, l'inspection de la table `logs_acces` v
 |----|--------|------------|-------------|
 | 3  | ACCESS /var/www/.message_pour_sophie.txt | 2024-01-13 02:17:00 | j.sauniere |
 | 6  | SUDO cp testament.txt /var/www/.message_pour_sophie.txt | 2024-01-13 02:18:00 | j.sauniere |
+
 Par ailleurs, il se trouve que la visionneuse de documents (`/documents?doc=...`) présente une vulnérabilité de type **LFI (Local File Inclusion)**. L'analyse montre que le paramètre `doc` ne valide pas suffisamment le chemin, permettant de cibler des fichiers *en dehors* de l'arborescence autorisée.
 ## 4. Résolution
 L'exploitation consiste donc à cibler directement le chemin absolu identifié dans les logs. Bien que les tentatives de *directory traversal* (`../../`) aient été bloquées, l'accès direct au chemin complet a permis de contourner les restrictions :
