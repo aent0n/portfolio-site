@@ -1,0 +1,41 @@
+---
+title: Write-up DaVinci CTF 2026 -  Message pour sophie
+date: '2026-05-19'
+description: 'Catégorie : Web / LFI & Log Analysis'
+tags:
+  - ctf
+  - lfi
+  - directory-traversal
+  - log-analysis
+  - writeup
+  - web
+---
+**Catégorie :** Web / LFI & Log Analysis
+**Flag :** `DVCTF{l4_v3r1t3_3st_3n_t01}`
+## 1. Introduction
+Suite à l'infiltration réussie de l'intranet du Louvre (challenge "Web - Gardien du secret"), l'analyse de la base de données a révélé une activité suspecte de Jacques Saunière : la création d'un fichier confidentiel `.message_pour_sophie.txt` situé à la racine du serveur. L'objectif est d'exploiter cette piste pour récupérer le message laissé à l'attention de Sophie.
+## 2. Concepts clés
+* **Directory traversal :** Technique permettant d'accéder à des répertoires et fichiers en dehors du dossier racine de l'application web en manipulant les chemins (ex: `../`).
+* **Analyse de logs :** Examen des traces d'activité système pour corréler des événements (ici, une copie de fichier via `SUDO cp`) et identifier des cibles potentielles.
+* **Fichiers cachés :** Fichiers commençant par un point (`.`) sous Linux, souvent utilisés pour masquer des données de configuration ou des messages secrets sur le système de fichiers.
+## 3. White-boxing et analyse
+Après avoir authentifié notre session, l'inspection de la table `logs_acces` via une injection SQL a permis d'extraire les traces suivantes :
+
+| id | action | date_heure | utilisateur |
+|----|--------|------------|-------------|
+| 3  | ACCESS /var/www/.message_pour_sophie.txt | 2024-01-13 02:17:00 | j.sauniere |
+| 6  | SUDO cp testament.txt /var/www/.message_pour_sophie.txt | 2024-01-13 02:18:00 | j.sauniere |
+Par ailleurs, il se trouve que la visionneuse de documents (`/documents?doc=...`) présente une vulnérabilité de type **LFI (Local File Inclusion)**. L'analyse montre que le paramètre `doc` ne valide pas suffisamment le chemin, permettant de cibler des fichiers *en dehors* de l'arborescence autorisée.
+## 4. Résolution
+L'exploitation consiste donc à cibler directement le chemin absolu identifié dans les logs. Bien que les tentatives de *directory traversal* (`../../`) aient été bloquées, l'accès direct au chemin complet a permis de contourner les restrictions :
+
+```sh
+curl -sk -b cookie_final.txt "https://13299.box.dvc.tf/documents?doc=/var/www/.message_pour_sophie.txt"
+```
+
+Le serveur interprète la requête et renvoie le contenu du fichier secret :
+- **Message :** "Sophie, la vérité est en toi. `l4_v3r1t3_3st_3n_t01`"
+- 
+![Pasted image 20260519151710.png](Pasted image 20260519151710.png)
+
+- **Flag :** `DVCTF{l4_v3r1t3_3st_3n_t01}`

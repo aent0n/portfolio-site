@@ -1,0 +1,55 @@
+---
+title: Write-up Batman's Kitchen CTF 2026 - Tiny SQL Bypass
+date: '2026-02-22'
+description: 'Write-up CTF : Tiny SQL Bypass'
+tags:
+  - ctf
+  - web
+  - sqli
+  - custom-db
+  - auth-bypass
+  - writeup
+---
+# Write-up CTF : Tiny SQL Bypass
+
+**Catégorie :** Web
+**Flag :** `bkctf{sql_1nj3ct10n_but_1tty_b1tty}`
+
+## 1. Introduction au challenge
+Le challenge présente une application web Python (Flask) utilisant une base de données propriétaire nommée "Tiny SQL". L'application expose une page de connexion (`/login`) et un forum (`/forum`). L'objectif est d'obtenir le flag stocké sur la page numéro 3 du forum, dont l'accès requiert une authentification valide.
+## 2. Concepts clés
+* **Injection SQL (SQLi) "Classique" :** Exploitation d'entrées utilisateur insérées directement dans une requête base de données sans nettoyage (ex: `SELECT * FROM users WHERE username = 'admin' OR 1=1 --`).
+* **Bases de données propriétaires / NoSQL :** La syntaxe SQL standard est inopérante. Une analyse du comportement (boîte blanche ou noire) est nécessaire pour déduire la structure et la grammaire spécifiques de la base.
+## 3. Analyse du code source (via white-boxing)
+L'analyse du fichier `app.py` met en évidence le fonctionnement de Tiny SQL :
+
+* **Requête de connexion (`/login`) :** La syntaxe de recherche utilisateur est `S:[user]:[pass]#comment`. L'application vérifie uniquement que la base retourne exactement 3 éléments (ID, utilisateur, mot de passe) via la condition `if len(results) != 3:`. Le mot de passe en lui-même n'est jamais vérifié.
+* **Requête du forum (`/forum/post/<id>`) :** La syntaxe de recherche par ID est                           `S:[id]#comment`. Fournir un identifiant numérique retourne les données de l'utilisateur correspondant.
+* **Création des utilisateurs :** Au démarrage, des utilisateurs factices (ex: `bob`, `john_r`) sont générés en base, confirmant l'existence d'ID valides (probablement à partir de l'index `0`).
+## 4. Vulnérabilité et exploitation
+La vulnérabilité réside dans la concaténation de chaînes sans échappement lors de la construction de la requête de login. Il est possible d'altérer la logique pour transformer une requête de "recherche utilisateur" en "recherche par ID".
+
+**Payload :**
+* `user = 0`
+* `pass = #`
+
+**Chaîne d'exécution :**
+1. L'application construit la requête envoyée à Tiny SQL : `S:0:#`
+2. Tiny SQL lit `S:0` et l'interprète comme une recherche pour l'utilisateur ID `0`.
+3. Le caractère `#` est interprété comme un commentaire ; la base ignore le reste de la chaîne.
+4. La base renvoie un tableau de 3 éléments pour l'utilisateur `0` (ex: `[0, "john_r", "hex_password"]`).
+5. La condition applicative `if len(results) != 3:` est validée.
+6. L'application authentifie l'utilisateur en assignant `session['username'] = "john_r"`.
+
+Le contournement d'authentification étant réussi, il suffit de consulter la page `/forum/post/3` pour récupérer le flag.
+## 5. Méthodologie et remédiation
+**Méthodologie d'attaque (Black-Box/Grey-Box sur systèmes custom) :**
+* **Cartographier les points d'entrée :** Identifier les inputs interagissant avec le backend.
+* **Identifier les caractères spéciaux :** Déduire la grammaire du système (ici, `:` comme séparateur, `#` comme commentaire).
+* **Fuzzing ciblé :** Tester le parsing en injectant des caractères de contrôle (sauts de ligne, commentaires, omissions de champs) pour observer les variations de réponse (code 500, code 403).
+* **Détournement logique :** Exploiter la syntaxe pour forcer l'application à valider ses propres conditions de sécurité.
+
+**Bonnes pratiques de développement (Remédiation) :**
+* **Proscrire la concaténation de chaînes :** Utiliser des requêtes préparées ou une abstraction sécurisée, même pour des formats de base de données propriétaires.
+* **Séparer les contextes de commandes :** Implémenter des racines grammaticales distinctes (ex: `SU:` pour utilisateur, `SI:` pour ID) pour éviter les collisions d'interprétation.
+* **Principe de moindre privilège et validation stricte :** Ne jamais se fier uniquement à la structure d'une réponse (longueur d'un tableau). Vérifier explicitement la correspondance cryptographique du mot de passe.
