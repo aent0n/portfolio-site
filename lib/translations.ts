@@ -108,6 +108,44 @@ export const translations = {
             back: "Retour aux write-ups",
             achievements_title: "Palmarès CTF",
             achievements_subtitle: "Quelques-uns de mes résultats récents en compétition.",
+            achievements: {
+                davinci_2026: {
+                    event: "DaVinci CTF 2026",
+                    rank: "4ème / 18",
+                    category: "CTF en équipe",
+                    date: "Mai 2026",
+                },
+                enedis_2025: {
+                    event: "CTF ENEDIS Inter écoles",
+                    rank: "2ème ex æquo / 33",
+                    category: "CTF en équipe",
+                    date: "Novembre 2025",
+                },
+                cybernight_2025: {
+                    event: "EFREI - CyberNight 2025",
+                    rank: "58ème / 263",
+                    category: "CTF en équipe",
+                    date: "Novembre 2025",
+                },
+                ramen_2025: {
+                    event: "Wiz x Ramen Runaway",
+                    rank: "Terminé",
+                    category: "Mini CTF Solo",
+                    date: "Novembre 2025",
+                },
+                htb_2025: {
+                    event: "HackTheBox - Eldoria's Tales",
+                    rank: "Top 9.74% (792/8130)",
+                    category: "CTF en équipe",
+                    date: "Mars 2025",
+                },
+                cybernight_2024: {
+                    event: "EFREI - CyberNight 2024",
+                    rank: "11ème / 115",
+                    category: "CTF en équipe - Cat. 'For Fun'",
+                    date: "Novembre 2024",
+                },
+            },
         },
     },
     en: {
@@ -215,6 +253,44 @@ export const translations = {
             back: "Back to write-ups",
             achievements_title: "CTF Achievements",
             achievements_subtitle: "Some of my recent competitive results.",
+            achievements: {
+                davinci_2026: {
+                    event: "DaVinci CTF 2026",
+                    rank: "4th / 18",
+                    category: "Team CTF",
+                    date: "May 2026",
+                },
+                enedis_2025: {
+                    event: "CTF ENEDIS Inter écoles",
+                    rank: "2nd ex æquo / 33",
+                    category: "Team CTF",
+                    date: "November 2025",
+                },
+                cybernight_2025: {
+                    event: "EFREI - CyberNight 2025",
+                    rank: "58th / 263",
+                    category: "Team CTF",
+                    date: "November 2025",
+                },
+                ramen_2025: {
+                    event: "Wiz x Ramen Runaway",
+                    rank: "Completed",
+                    category: "Solo Mini CTF",
+                    date: "November 2025",
+                },
+                htb_2025: {
+                    event: "HackTheBox - Eldoria's Tales",
+                    rank: "Top 9.74% (792/8130)",
+                    category: "Team CTF",
+                    date: "March 2025",
+                },
+                cybernight_2024: {
+                    event: "EFREI - CyberNight 2024",
+                    rank: "11th / 115",
+                    category: "Team CTF - Cat. 'For Fun'",
+                    date: "November 2024",
+                },
+            },
         },
     },
     de: {
@@ -322,6 +398,44 @@ export const translations = {
             back: "Zurück zu den write-ups",
             achievements_title: "CTF-Erfolge",
             achievements_subtitle: "Einige meiner jüngsten Wettbewerbsergebnisse.",
+            achievements: {
+                davinci_2026: {
+                    event: "DaVinci CTF 2026",
+                    rank: "4. / 18",
+                    category: "Team-CTF",
+                    date: "Mai 2026",
+                },
+                enedis_2025: {
+                    event: "CTF ENEDIS Inter écoles",
+                    rank: "2. ex æquo / 33",
+                    category: "Team-CTF",
+                    date: "November 2025",
+                },
+                cybernight_2025: {
+                    event: "EFREI - CyberNight 2025",
+                    rank: "58. / 263",
+                    category: "Team-CTF",
+                    date: "November 2025",
+                },
+                ramen_2025: {
+                    event: "Wiz x Ramen Runaway",
+                    rank: "Abgeschlossen",
+                    category: "Solo-Mini-CTF",
+                    date: "November 2025",
+                },
+                htb_2025: {
+                    event: "HackTheBox - Eldoria's Tales",
+                    rank: "Top 9.74% (792/8130)",
+                    category: "Team-CTF",
+                    date: "März 2025",
+                },
+                cybernight_2024: {
+                    event: "EFREI - CyberNight 2024",
+                    rank: "11. / 115",
+                    category: "Team-CTF - Kat. 'For Fun'",
+                    date: "November 2024",
+                },
+            },
         },
     },
 };

@@ -4,6 +4,7 @@ import PostHeader from "@/components/PostHeader";
 import rehypeSlug from "rehype-slug";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
 export async function generateStaticParams() {
     const slugs = getPostSlugs();
@@ -29,7 +30,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                     source={post.content}
                     options={{
                         mdxOptions: {
-                            remarkPlugins: [remarkGfm],
+                            remarkPlugins: [remarkGfm, remarkBreaks],
                             rehypePlugins: [
                                 rehypeSlug,
                                 [rehypeHighlight, { detect: true }],
