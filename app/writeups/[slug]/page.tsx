@@ -3,6 +3,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import PostHeader from "@/components/PostHeader";
 import rehypeSlug from "rehype-slug";
 import rehypeHighlight from "rehype-highlight";
+import remarkGfm from "remark-gfm";
 
 export async function generateStaticParams() {
     const slugs = getPostSlugs();
@@ -28,6 +29,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                     source={post.content}
                     options={{
                         mdxOptions: {
+                            remarkPlugins: [remarkGfm],
                             rehypePlugins: [
                                 rehypeSlug,
                                 [rehypeHighlight, { detect: true }],
