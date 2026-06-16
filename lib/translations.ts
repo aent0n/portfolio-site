@@ -108,6 +108,7 @@ export const translations = {
             back: "Retour aux write-ups",
             achievements_title: "Palmarès CTF",
             achievements_subtitle: "Quelques-uns de mes résultats récents en compétition.",
+            view_all_achievements: "Voir tout le palmarès",
             achievements: {
                 davinci_2026: {
                     event: "DaVinci CTF 2026",
@@ -253,6 +254,7 @@ export const translations = {
             back: "Back to write-ups",
             achievements_title: "CTF Achievements",
             achievements_subtitle: "Some of my recent competitive results.",
+            view_all_achievements: "View all achievements",
             achievements: {
                 davinci_2026: {
                     event: "DaVinci CTF 2026",
@@ -398,6 +400,7 @@ export const translations = {
             back: "Zurück zu den write-ups",
             achievements_title: "CTF-Erfolge",
             achievements_subtitle: "Einige meiner jüngsten Wettbewerbsergebnisse.",
+            view_all_achievements: "Alle Erfolge anzeigen",
             achievements: {
                 davinci_2026: {
                     event: "DaVinci CTF 2026",

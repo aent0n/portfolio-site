@@ -12,7 +12,7 @@ export default function Home() {
       <Hero />
       <LatestUpdates posts={posts} />
       <About />
-      <CTFPodiums />
+      <CTFPodiums limit={3} />
     </div>
   );
 }
