@@ -52,7 +52,7 @@ export default function Hero() {
             >
                 <Link
                     href="/projects"
-                    className="inline-flex items-center justify-center rounded-lg bg-blue px-6 py-3 text-sm font-semibold text-base transition-all hover:bg-blue/80 hover:shadow-lg hover:shadow-blue/20"
+                    className="inline-flex items-center justify-center rounded-lg bg-blue px-6 py-3 text-sm font-semibold text-base-theme transition-all hover:bg-blue/80 hover:shadow-lg hover:shadow-blue/20"
                 >
                     {t("hero.view_projects")}
                 </Link>

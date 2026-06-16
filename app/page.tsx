@@ -12,6 +12,7 @@ export default function Home() {
       <Hero />
       <LatestUpdates posts={posts} />
       <About />
+      <CTFPodiums />
     </div>
   );
 }

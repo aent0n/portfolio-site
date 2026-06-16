@@ -24,7 +24,7 @@ export default function ContactPage() {
                 <div className="flex flex-col items-center gap-8">
                     <Link
                         href="mailto:contact@aadam.mozmail.com"
-                        className="inline-flex items-center gap-3 rounded-full bg-blue px-8 py-4 text-lg font-semibold text-base transition-colors hover:bg-blue/80"
+                        className="inline-flex items-center gap-3 rounded-full bg-blue px-8 py-4 text-lg font-semibold text-base-theme transition-colors hover:bg-blue/80"
                     >
                         <Mail className="h-6 w-6" />
                         contact@aadam.mozmail.com

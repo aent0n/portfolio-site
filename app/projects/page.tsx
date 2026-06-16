@@ -29,7 +29,7 @@ export default function ProjectsPage() {
                         key={category}
                         onClick={() => setActiveCategory(category)}
                         className={`rounded-full px-6 py-2 text-sm font-medium transition-colors ${activeCategory === category
-                            ? "bg-blue text-base"
+                            ? "bg-blue text-base-theme"
                             : "bg-surface0/50 text-surface1 hover:bg-surface0 hover:text-foreground"
                             }`}
                     >

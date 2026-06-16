@@ -121,7 +121,7 @@ export default function About() {
                             onClick={() => handleSkillClick(skill.id)}
                             className="group cursor-pointer rounded-2xl border border-surface0 bg-surface0/50 p-6 transition-all hover:bg-surface0 hover:border-blue/50 hover:shadow-lg hover:shadow-blue/5 hover:-translate-y-1"
                         >
-                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-blue/10 text-blue group-hover:bg-blue group-hover:text-base transition-colors">
+                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-blue/10 text-blue group-hover:bg-blue group-hover:text-base-theme transition-colors">
                                 <skill.icon className="h-6 w-6" />
                             </div>
                             <h3 className="mb-2 text-xl font-semibold text-foreground">{skill.name}</h3>

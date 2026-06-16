@@ -6,6 +6,7 @@
 
 @theme {
   --color-base: var(--color-base);
+  --color-base-theme: var(--color-base);
   --color-mantle: var(--color-mantle);
   --color-crust: var(--color-crust);
   --color-surface0: var(--color-surface0);
