@@ -109,6 +109,16 @@ export const translations = {
             achievements_title: "Palmarès CTF",
             achievements_subtitle: "Quelques-uns de mes résultats récents en compétition.",
             view_all_achievements: "Voir tout le palmarès",
+            categories: {
+                all: "Tout",
+                web: "Web",
+                forensics: "Forensics",
+                reverse: "Reverse",
+                pwn: "Pwn",
+                blockchain: "Blockchain",
+                crypto: "Crypto",
+                osint: "OSINT",
+            },
             achievements: {
                 davinci_2026: {
                     event: "DaVinci CTF 2026",
@@ -255,6 +265,16 @@ export const translations = {
             achievements_title: "CTF Achievements",
             achievements_subtitle: "Some of my recent competitive results.",
             view_all_achievements: "View all achievements",
+            categories: {
+                all: "All",
+                web: "Web",
+                forensics: "Forensics",
+                reverse: "Reverse",
+                pwn: "Pwn",
+                blockchain: "Blockchain",
+                crypto: "Crypto",
+                osint: "OSINT",
+            },
             achievements: {
                 davinci_2026: {
                     event: "DaVinci CTF 2026",
@@ -401,6 +421,16 @@ export const translations = {
             achievements_title: "CTF-Erfolge",
             achievements_subtitle: "Einige meiner jüngsten Wettbewerbsergebnisse.",
             view_all_achievements: "Alle Erfolge anzeigen",
+            categories: {
+                all: "Alle",
+                web: "Web",
+                forensics: "Forensik",
+                reverse: "Reverse",
+                pwn: "Pwn",
+                blockchain: "Blockchain",
+                crypto: "Krypto",
+                osint: "OSINT",
+            },
             achievements: {
                 davinci_2026: {
                     event: "DaVinci CTF 2026",

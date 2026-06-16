@@ -31,6 +31,135 @@ function slugify(text) {
         .replace(/-+$/, '');      // Trim - from end
 }
 
+// Tag Homogenization Map
+const TAG_MAP = {
+    // Web
+    'web': 'Web',
+    'sqli': 'Web',
+    'sql-injection': 'Web',
+    'lfi': 'Web',
+    'rfi': 'Web',
+    'xss': 'Web',
+    'csrf': 'Web',
+    'ssti': 'Web',
+    'ssrf': 'Web',
+    'directory-traversal': 'Web',
+    'websocket': 'Web',
+    'cookie-session': 'Web',
+    'arbitrary-file-write': 'Web',
+    'puppeteer': 'Web',
+    'protocol-injection': 'Web',
+    'socket-poisoning': 'Web',
+    'nodejs': 'Web',
+    'php': 'Web',
+    'html': 'Web',
+
+    // Forensics
+    'forensics': 'Forensics',
+    'log-analysis': 'Forensics',
+    'memory-analysis': 'Forensics',
+    'volatility': 'Forensics',
+    'pcap': 'Forensics',
+    'wireshark': 'Forensics',
+    'dfir': 'Forensics',
+    'event-logs': 'Forensics',
+
+    // Reverse
+    'reverse': 'Reverse',
+    'maldoc': 'Reverse',
+    'vba': 'Reverse',
+    'oletools': 'Reverse',
+    'ghidra': 'Reverse',
+    'ida': 'Reverse',
+    'assembly': 'Reverse',
+    'binary': 'Reverse',
+    'decompile': 'Reverse',
+    'unpacking': 'Reverse',
+
+    // Pwn
+    'pwn': 'Pwn',
+    'exploit': 'Pwn',
+    'buffer-overflow': 'Pwn',
+    'race-condition': 'Pwn',
+    'toctou': 'Pwn',
+    'rce': 'Pwn',
+    'integer-truncation': 'Pwn',
+    'heap': 'Pwn',
+    'stack-smashing': 'Pwn',
+
+    // Blockchain
+    'blockchain': 'Blockchain',
+    'sui-move': 'Blockchain',
+    'move': 'Blockchain',
+    'smart-contract': 'Blockchain',
+    'solidity': 'Blockchain',
+    'ethereum': 'Blockchain',
+
+    // Crypto
+    'crypto': 'Crypto',
+    'cipher': 'Crypto',
+    'aes': 'Crypto',
+    'rsa': 'Crypto',
+    'xor': 'Crypto',
+    'hash': 'Crypto',
+    'cryptography': 'Crypto',
+
+    // OSINT
+    'osint': 'OSINT',
+    'geolocate': 'OSINT',
+    'sherlock': 'OSINT',
+    'recon': 'OSINT',
+};
+
+const EXCLUDED_TAGS = new Set(['ctf', 'writeup']);
+
+function homogenizeTags(rawTags, content) {
+    const finalTags = new Set();
+    const contentLower = content.toLowerCase();
+
+    // 1. Process raw tags
+    if (Array.isArray(rawTags)) {
+        rawTags.forEach(t => {
+            const cleanTag = t.trim().toLowerCase();
+            if (EXCLUDED_TAGS.has(cleanTag)) return;
+
+            if (TAG_MAP[cleanTag]) {
+                finalTags.add(TAG_MAP[cleanTag]);
+            } else {
+                const standardCategories = ['Web', 'Forensics', 'Reverse', 'Pwn', 'Blockchain', 'Crypto', 'OSINT'];
+                const matchedCategory = standardCategories.find(cat => cat.toLowerCase() === cleanTag);
+                if (matchedCategory) {
+                    finalTags.add(matchedCategory);
+                }
+            }
+        });
+    }
+
+    // 2. Intelligent suggestions based on content keywords
+    const rules = [
+        { keywords: ['volatility', 'wireshark', 'pcap', 'wireshark', 'event logs', 'memory analysis', 'log analysis'], category: 'Forensics' },
+        { keywords: ['ghidra', 'ida pro', 'decompiler', 'assembly', 'maldoc', 'vba', 'oletools', 'reverse engineering'], category: 'Reverse' },
+        { keywords: ['buffer overflow', 'stack smashing', 'ret2libc', 'heap overflow', 'shellcode', 'rop chain', 'toctou', 'race condition'], category: 'Pwn' },
+        { keywords: ['sqli', 'sql injection', 'xss', 'csrf', 'lfi', 'rfi', 'directory traversal', 'local file inclusion', 'websocket', 'ssti', 'ssrf', 'cookie session'], category: 'Web' },
+        { keywords: ['blockchain', 'smart contract', 'solidity', 'sui move', 'ethereum', 'web3'], category: 'Blockchain' },
+        { keywords: ['cipher', 'rsa decryption', 'aes-128', 'aes-256', 'xor cipher', 'cryptography', 'private key', 'public key'], category: 'Crypto' },
+        { keywords: ['osint', 'geolocation', 'open source intelligence', 'sherlock tool'], category: 'OSINT' }
+    ];
+
+    rules.forEach(rule => {
+        const hasKeyword = rule.keywords.some(keyword => contentLower.includes(keyword));
+        if (hasKeyword) {
+            finalTags.add(rule.category);
+        }
+    });
+
+    if (finalTags.size === 0) {
+        finalTags.add('Web');
+    }
+
+    return Array.from(finalTags);
+}
+
 // Helper: Find file recursively in directory
 function findFile(dir, filename) {
     const files = fs.readdirSync(dir);
@@ -119,7 +248,7 @@ function processFile(filePath) {
         title: data.title || title,
         date: data.date || creationDate,
         description: description || "No description.",
-        tags: [...new Set([...(data.tags || []), ...tags])] // Merge and unique
+        tags: homogenizeTags([...(data.tags || []), ...tags], content)
     };
 
     // 5. Process Content Syntax
