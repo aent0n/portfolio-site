@@ -8,6 +8,12 @@ export interface Project {
 
 export const projectsData: Project[] = [
     {
+        id: "triage",
+        tags: ["PowerShell", "HTML/JS", "DFIR", "Forensics"],
+        github: "https://github.com/aent0n/triAAge-collector",
+        category: "sec",
+    },
+    {
         id: "steg",
         tags: ["Python", "Steganography", "Forensics"],
         github: "https://github.com/aent0n/StegEngineV2",

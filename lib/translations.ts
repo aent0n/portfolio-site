@@ -79,6 +79,10 @@ export const translations = {
                 tools: "Outils",
             },
             items: {
+                triage: {
+                    title: "triAAge-collector",
+                    desc: "Script de triage forensique Windows léger couplé à un tableau de bord HTML interactif portable pour l'analyse rapide d'artefacts.",
+                },
                 steg: {
                     title: "Moteur de Stéganographie",
                     desc: "Plateforme pour dissimuler et extraire des informations dans divers médias (Images, Audio, PDF) pour l'analyse forensique.",
@@ -235,6 +239,10 @@ export const translations = {
                 tools: "Tools",
             },
             items: {
+                triage: {
+                    title: "triAAge-collector",
+                    desc: "A lightweight Windows forensic triage script coupled with a portable HTML dashboard for quick artifact analysis.",
+                },
                 steg: {
                     title: "Steganography Engine",
                     desc: "Platform to hide and extract information in various media (Images, Audio, PDF) for forensic analysis.",
@@ -391,6 +399,10 @@ export const translations = {
                 tools: "Werkzeuge",
             },
             items: {
+                triage: {
+                    title: "triAAge-collector",
+                    desc: "Ein leichtgewichtiges Windows-Forensik-Triage-Skript gekoppelt mit einem portablen HTML-Dashboard zur schnellen Artefaktanalyse.",
+                },
                 steg: {
                     title: "Steganographie-Engine",
                     desc: "Plattform zum Verstecken und Extrahieren von Informationen in verschiedenen Medien (Bilder, Audio, PDF) für forensische Analysen.",
