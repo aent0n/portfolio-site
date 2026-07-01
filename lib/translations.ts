@@ -79,6 +79,10 @@ export const translations = {
                 tools: "Outils",
             },
             items: {
+                axidraw: {
+                    title: "AxiDraw Slicer",
+                    desc: "Logiciel de découpe vectorielle, d'optimisation de trajectoire et de contrôle en temps réel pour traceurs AxiDraw. Développé avec Tauri (Rust) et React.",
+                },
                 triage: {
                     title: "triAAge-collector",
                     desc: "Script de triage forensique Windows léger couplé à un tableau de bord HTML interactif portable pour l'analyse rapide d'artefacts.",
@@ -239,6 +243,10 @@ export const translations = {
                 tools: "Tools",
             },
             items: {
+                axidraw: {
+                    title: "AxiDraw Slicer",
+                    desc: "A vector slicing, toolpath optimization, and real-time controller interface for AxiDraw plotting machines. Built with Tauri (Rust) and React.",
+                },
                 triage: {
                     title: "triAAge-collector",
                     desc: "A lightweight Windows forensic triage script coupled with a portable HTML dashboard for quick artifact analysis.",
@@ -399,6 +407,10 @@ export const translations = {
                 tools: "Werkzeuge",
             },
             items: {
+                axidraw: {
+                    title: "AxiDraw Slicer",
+                    desc: "Vektorslicing, Pfadoptimierung und Echtzeit-Steuerungsoberfläche für AxiDraw-Zeichenmaschinen. Entwickelt mit Tauri (Rust) und React.",
+                },
                 triage: {
                     title: "triAAge-collector",
                     desc: "Ein leichtgewichtiges Windows-Forensik-Triage-Skript gekoppelt mit einem portablen HTML-Dashboard zur schnellen Artefaktanalyse.",

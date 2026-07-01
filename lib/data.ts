@@ -8,6 +8,12 @@ export interface Project {
 
 export const projectsData: Project[] = [
     {
+        id: "axidraw",
+        tags: ["Tauri", "Rust", "React", "TypeScript"],
+        github: "https://github.com/aent0n/axidraw-slicer",
+        category: "tools",
+    },
+    {
         id: "triage",
         tags: ["PowerShell", "HTML/JS", "DFIR", "Forensics"],
         github: "https://github.com/aent0n/triAAge-collector",
