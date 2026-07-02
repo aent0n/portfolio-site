@@ -1,0 +1,65 @@
+---
+title: Write-up LeHack CTF 2026 - NothingToHide
+date: '2026-06-28'
+description: 'Catégorie : Forensics / Analyse de disque & Cryptographie'
+tags:
+  - Forensics
+  - Crypto
+---
+**Catégorie :** Forensics / Analyse de disque & Cryptographie
+**Flag :** `leHACK{1nt3r_p4rt1t10n_s3cr3t}`
+
+## 1. Introduction
+Ce challenge consiste à analyser une image de clé USB `usb_forensic.E01` et une archive de snapshot de processus `proc_snapshot.tar.gz` afin d'en extraire les secrets cachés.
+## 2. Concepts clés
+* **Analyse E01 (Expert Witness Format) :** Manipulation et lecture d'images disques forensiques standardisées sans altération.
+* **Volume chiffré VeraCrypt :** Extraction et déchiffrement en espace utilisateur (Userspace) via script Python (`pytruecrypt`) pour contourner les restrictions des privilèges d'exécution.
+* **Analyse des zones non allouées (gaps) :** Extraction de données dissimulées entre les partitions et cassage XOR.
+## 3. White-boxing et analyse
+L'analyse de l'image avec `mmls` révèle la présence de deux partitions Linux (0x83) et un espace non alloué de 2 Mo entre elles :
+- **Partition 1** : Secteurs `2048` à `102399` (51.4 Mo)
+- **Espace Non Alloué** : Secteurs `102400` à `106495` (2 Mo)
+- **Partition 2** : Secteurs `106496` à `409599` (155 Mo)
+
+L'exploration de la **Partition 1** via `fls` et `icat` permet d'extraire les fichiers :
+- `notes.txt` : `Meeting 2pm - room B`
+- `infos.txt` : `wifi password: Azerty123`
+
+L'analyse de l'archive `proc_snapshot.tar.gz` (contenant le répertoire `/proc` du système suspect) et plus particulièrement des commandes `cmdline_readable` des processus (PIDs `4239`, `4241`, `4245`) révèle la ligne de montage VeraCrypt suivante :
+```sh
+veracrypt --text --mount /dev/loop18p2 /mnt/secure --password Ib3li3v3inFr33d0m --pim 0 --keyfiles 
+```
+Cela nous donne le mot de passe de la **Partition 2** chiffrée : `Ib3li3v3inFr33d0m`.
+
+## 4. Résolution
+### A. Déchiffrement VeraCrypt en Userspace
+Pour déchiffrer la partition 2 sans privilèges root (dm_mod bloqué), nous extrayons la partition brute et utilisons la bibliothèque Python `pytruecrypt` :
+```sh
+img_cat usb_forensic.E01 > usb_raw.img
+dd if=usb_raw.img of=partition2.img bs=512 skip=106496 count=303104
+PYTHONPATH=./pytruecrypt python2 pytruecrypt/examples/image.py \
+  pwd partition2.img decrypted_partition2.img aes Ib3li3v3inFr33d0m sha512 -v
+```
+L'image déchiffrée contient une partition FAT32 avec deux fichiers :
+- `README.txt` : `Project Alpha - Confidential documents`
+- `NOTE.txt` : `If you are reading this... dig deeper.`
+
+### B. Analyse de la zone non allouée
+Le message nous invite à analyser l'espace non alloué de 2 Mo (secteur `102400` à `106495`). Un dump de cette zone montre des données de forte entropie suivies de la chaîne répétée `ctf_xor_seed`.
+
+Nous exécutons un script Python pour déchiffrer cette zone via une clé XOR `ctf_xor_seed` :
+```python
+out = bytes.fromhex(
+    '0f112e1e3b24096e1d1156163c04522d0c5e066e430b3a175017146c0c127816'
+    '1d1100164e04072d0c0606361c0b45030204157f1b0e1c7f1b0c010143154633'
+    '171b52301545110c0a1a012c56415c551b0c0100061a392f191c016527175511'
+    '014002300d1d'
+)
+key = b'ctf_xor_seed'
+decrypted = bytearray(b ^ key[i % len(key)] for i, b in enumerate(out))
+print(decrypted.decode('utf-8'))
+```
+
+Le script retourne le flag final ainsi qu'un mot de passe additionnel :
+* **Flag** : `leHACK{1nt3r_p4rt1t10n_s3cr3t}`
+* **Password (Hidden Volume)** : `Tr0ub4dour`
