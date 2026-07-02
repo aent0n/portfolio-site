@@ -25,7 +25,7 @@ export default function PostHeader({ title, date, tags }: PostHeaderProps) {
 
             <div className="mb-8 border-b border-surface0 pb-8">
                 <h1 className="mb-4 text-4xl font-bold text-foreground">{title}</h1>
-                <div className="flex items-center gap-4 text-sm text-surface1">
+                <div className="flex items-center gap-4 text-sm text-subtext0">
                     <time dateTime={date}>{date}</time>
                     {tags && (
                         <div className="flex gap-2">

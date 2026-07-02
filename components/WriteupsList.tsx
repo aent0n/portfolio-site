@@ -45,7 +45,7 @@ export default function WriteupsList({ posts }: { posts: Post[] }) {
                         className={`relative rounded-full px-5 py-2 text-sm font-medium transition-colors duration-300 ${
                             activeCategory === category
                                 ? "text-base-theme"
-                                : "bg-surface0/50 text-surface1 hover:bg-surface0 hover:text-foreground"
+                                : "bg-surface0/50 text-subtext0 hover:bg-surface0 hover:text-foreground"
                         }`}
                     >
                         {activeCategory === category && (
