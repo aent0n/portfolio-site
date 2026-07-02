@@ -309,12 +309,13 @@ function processFile(filePath) {
             console.log(`   🖼️  Copied image: ${rawImageName}`);
 
             const publicPath = `/images/writeups/${slug}/${rawImageName}`;
+            const encodedPath = encodeURI(publicPath);
 
             // Return HTML img tag if width is specified, else Markdown image
             if (width) {
-                return `<img src="${publicPath}" alt="${rawImageName}" width="${width}" />`;
+                return `<img src="${encodedPath}" alt="${rawImageName}" width="${width}" />`;
             } else {
-                return `![${rawImageName}](${publicPath})`;
+                return `![${rawImageName}](${encodedPath})`;
             }
         } else {
             console.warn(`   ⚠️  Image not found: ${rawImageName}`);
