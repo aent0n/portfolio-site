@@ -7,13 +7,43 @@ const TARGET_DIR = path.join(__dirname, '../content/ctf');
 const PUBLIC_IMG_DIR = path.join(__dirname, '../public/images/writeups');
 
 // Get source directory from arguments
-const sourceDir = process.argv[2];
+const inputDir = process.argv[2];
 
-if (!sourceDir) {
+if (!inputDir) {
     console.error('❌ Please provide the source directory path.');
     console.error('Usage: node scripts/sync-obsidian.js <path-to-obsidian-folder>');
     process.exit(1);
 }
+
+const sourceDir = path.resolve(inputDir);
+
+// Helper: Find Obsidian Vault Root (contains .obsidian folder)
+function findVaultRoot(dir) {
+    let current = path.resolve(dir);
+    while (true) {
+        const obsPath = path.join(current, '.obsidian');
+        if (fs.existsSync(obsPath)) {
+            return current;
+        }
+        const parent = path.dirname(current);
+        if (parent === current) {
+            break;
+        }
+        current = parent;
+    }
+    return null;
+}
+
+// Determine if we should only sync the OK folder
+let syncDir = sourceDir;
+const okDir = path.join(sourceDir, 'OK');
+if (fs.existsSync(okDir) && fs.statSync(okDir).isDirectory()) {
+    syncDir = okDir;
+    console.log(`📂 Found 'OK' directory. Only syncing validated challenges from: ${syncDir}`);
+}
+
+const vaultRoot = findVaultRoot(sourceDir) || sourceDir;
+console.log(`🏠 Vault Root identified at: ${vaultRoot}`);
 
 // Ensure target directories exist
 if (!fs.existsSync(TARGET_DIR)) fs.mkdirSync(TARGET_DIR, { recursive: true });
@@ -201,11 +231,11 @@ function processFile(filePath) {
 
     // 2. Extract Tags from Folder Structure
     // Path: .../CTFBlog/EventName/Category/Note.md
-    const relativePath = path.relative(sourceDir, filePath);
+    const relativePath = path.relative(syncDir, filePath);
     const folders = relativePath.split(path.sep).slice(0, -1); // Exclude filename
 
-    // Filter out common root folders if needed, or just use all as tags
-    let tags = folders.filter(f => f !== 'CTFBlog');
+    // Filter out common root folders, as well as OK/WIP directories
+    let tags = folders.filter(f => f !== 'CTFBlog' && f !== 'OK' && f !== 'WIP');
     if (difficulty) tags.push(difficulty);
 
     // 3. Read Content & Frontmatter
@@ -273,7 +303,7 @@ function processFile(filePath) {
         const rawImageName = parts[0];
         const width = parts[1] ? parts[1].replace(/[^0-9]/g, '') : null; // Extract numeric width
 
-        const imagePath = findFile(sourceDir, rawImageName); // Search in ENTIRE vault
+        const imagePath = findFile(vaultRoot, rawImageName); // Search in ENTIRE vault
 
         if (imagePath) {
             // Create specific folder for this writeup's images
@@ -325,8 +355,8 @@ function walkDir(dir, fileList = []) {
     return fileList;
 }
 
-console.log(`🚀 Syncing Obsidian Vault from: ${sourceDir}`);
-const processedFiles = walkDir(sourceDir);
+console.log(`🚀 Syncing Obsidian Vault from: ${syncDir}`);
+const processedFiles = walkDir(syncDir);
 
 // 7. Cleanup: Delete files in target that were not processed
 const existingFiles = fs.readdirSync(TARGET_DIR);

@@ -51,6 +51,10 @@ export const translations = {
                     title: "Impression 3D",
                     desc: "Modélisation et impression FDM.",
                 },
+                plotting: {
+                    title: "Art Génératif & Traçage",
+                    desc: "Création d'œuvres algorithmiques et contrôle de traceurs physiques (AxiDraw).",
+                },
             },
             achievements: {
                 steg: { title: "Stéganographie Image", desc: "LSB & Métadonnées (tEXt chunks) pour PNGs" },
@@ -66,7 +70,9 @@ export const translations = {
                 problem_solving: { title: "Résolution de Problèmes", desc: "Approche analytique des challenges CTF" },
                 adaptability: { title: "Adaptabilité", desc: "Apprentissage rapide de nouveaux outils (ex: React via IA)" },
                 fpv_build: { title: "Construction Drone", desc: "Assemblage complet, soudure & programmation électronique" },
-                "3d_design": { title: "Conception 3D", desc: "Design sur Fusion360 & calibration d'imprimantes" }
+                "3d_design": { title: "Conception 3D", desc: "Design sur Fusion360 & calibration d'imprimantes" },
+                tauri: { title: "Applications Bureau (Tauri/Rust)", desc: "Développement d'outils couplant Rust et interfaces React (ex: AxiDraw Slicer)" },
+                plotting_build: { title: "Optimisation de tracés", desc: "Algorithmes de vectorisation et résolution TSP (Traveling Salesperson Problem)" }
             },
         },
         projects: {
@@ -215,6 +221,10 @@ export const translations = {
                     title: "3D Printing",
                     desc: "Modeling and FDM printing.",
                 },
+                plotting: {
+                    title: "Generative Art & Plotting",
+                    desc: "Creating algorithmic art and controlling physical line plotters (AxiDraw).",
+                },
             },
             achievements: {
                 steg: { title: "Image Steganography", desc: "LSB & Metadata (tEXt chunks) for PNGs" },
@@ -230,7 +240,9 @@ export const translations = {
                 problem_solving: { title: "Problem Solving", desc: "Analytical approach to CTF challenges" },
                 adaptability: { title: "Adaptability", desc: "Quick learning of new tools (e.g., React via AI)" },
                 fpv_build: { title: "Drone Building", desc: "Full assembly, soldering & electronic programming" },
-                "3d_design": { title: "3D Design", desc: "Fusion360 design & printer calibration" }
+                "3d_design": { title: "3D Design", desc: "Fusion360 design & printer calibration" },
+                tauri: { title: "Desktop Apps (Tauri/Rust)", desc: "Building utilities combining Rust backends and React frontends (e.g. AxiDraw Slicer)" },
+                plotting_build: { title: "Toolpath Optimization", desc: "Vectorization algorithms and TSP (Traveling Salesperson Problem) solvers" }
             },
         },
         projects: {
@@ -379,6 +391,10 @@ export const translations = {
                     title: "3D-Druck",
                     desc: "Modellierung und FDM-Druck.",
                 },
+                plotting: {
+                    title: "Generative Kunst & Plotten",
+                    desc: "Erstellung algorithmischer Kunst und Steuerung von Stiftplottern (AxiDraw).",
+                },
             },
             achievements: {
                 steg: { title: "Bild-Steganographie", desc: "LSB & Metadaten (tEXt chunks) für PNGs" },
@@ -394,7 +410,9 @@ export const translations = {
                 problem_solving: { title: "Problemlösung", desc: "Analytischer Ansatz bei CTF-Challenges" },
                 adaptability: { title: "Anpassungsfähigkeit", desc: "Schnelles Erlernen neuer Tools (z.B. React via KI)" },
                 fpv_build: { title: "Drohnenbau", desc: "Komplette Montage, Löten & elektronische Programmierung" },
-                "3d_design": { title: "3D-Design", desc: "Design in Fusion360 & Druckerkalibrierung" }
+                "3d_design": { title: "3D-Design", desc: "Design in Fusion360 & Druckerkalibrierung" },
+                tauri: { title: "Desktop-Apps (Tauri/Rust)", desc: "Entwicklung von Utilities durch Verbindung von Rust und React (z.B. AxiDraw Slicer)" },
+                plotting_build: { title: "Pfadoptimierung", desc: "Vektorisierungsalgorithmen und TSP-Löser (Traveling Salesperson Problem)" }
             },
         },
         projects: {
