@@ -48,12 +48,12 @@ export const translations = {
                     desc: "Conception, montage et vol cinématographique.",
                 },
                 print: {
-                    title: "Fabrication Numérique & CNC",
+                    title: "Fabrication numérique & CNC",
                     desc: "Modélisation 3D (FDM), calibration d'imprimantes et pilotage de traceurs vectoriels (AxiDraw).",
                 },
             },
             achievements: {
-                steg: { title: "Stéganographie Image", desc: "LSB & Métadonnées (tEXt chunks) pour PNGs" },
+                steg: { title: "Stéganographie image", desc: "LSB & Métadonnées (tEXt chunks) pour PNGs" },
                 forensics: { title: "Forensics", desc: "Analyse mémoire avec Volatility 3 en CTF" },
                 pentest: { title: "Pentesting", desc: "Training sur RootMe, HTB, THM & Metasploit" },
                 elk: { title: "ELK Stack", desc: "Mise en place & Monitoring (Voir CV)" },
@@ -62,12 +62,12 @@ export const translations = {
                 cloud: { title: "Ressources Cloud", desc: "Gestion de ressources (Contexte académique)" },
                 python: { title: "Scripting Python", desc: "Scripts d'automatisation & logique algorithmique" },
                 web: { title: "Dev Web", desc: "HTML/CSS/JS & PHP (Architecture de services)" },
-                ai_dev: { title: "Dev Augmenté par IA", desc: "Prototypage rapide & génération de logique via LLMs" },
-                problem_solving: { title: "Résolution de Problèmes", desc: "Approche analytique des challenges CTF" },
+                ai_dev: { title: "Dev augmenté par IA", desc: "Prototypage rapide & génération de logique via LLMs" },
+                problem_solving: { title: "Résolution de problèmes", desc: "Approche analytique des challenges CTF" },
                 adaptability: { title: "Adaptabilité", desc: "Apprentissage rapide de nouveaux outils (ex: React via IA)" },
-                fpv_build: { title: "Construction Drone", desc: "Assemblage complet, soudure & programmation électronique" },
+                fpv_build: { title: "Construction de drone", desc: "Assemblage complet, soudure & programmation électronique" },
                 "3d_design": { title: "Conception 3D", desc: "Design sur Fusion360 & calibration d'imprimantes" },
-                tauri: { title: "Applications Bureau (Tauri/Rust)", desc: "Développement d'outils couplant Rust et interfaces React (ex: AxiDraw Slicer)" },
+                tauri: { title: "Applications bureau (Tauri/Rust)", desc: "Développement d'outils couplant Rust et interfaces React (ex: AxiDraw Slicer)" },
                 plotting_build: { title: "Optimisation de tracés", desc: "Algorithmes de vectorisation et résolution TSP (Traveling Salesperson Problem)" }
             },
         },
@@ -90,7 +90,7 @@ export const translations = {
                     desc: "Script de triage forensique Windows léger couplé à un tableau de bord HTML interactif portable pour l'analyse rapide d'artefacts.",
                 },
                 steg: {
-                    title: "Moteur de Stéganographie",
+                    title: "Moteur de stéganographie",
                     desc: "Plateforme pour dissimuler et extraire des informations dans divers médias (Images, Audio, PDF) pour l'analyse forensique.",
                 },
                 queens: {
@@ -102,7 +102,7 @@ export const translations = {
                     desc: "ECG fonctionnel via Arduino Nano et développement C++ pour le traitement du signal.",
                 },
                 portfolio: {
-                    title: "Site Portfolio",
+                    title: "Site portfolio",
                     desc: "Portfolio professionnel construit avec Next.js, Tailwind CSS et Framer Motion.",
                 },
             },
