@@ -130,6 +130,18 @@ export const translations = {
                 osint: "OSINT",
             },
             achievements: {
+                tracelabs_lehack_2026: {
+                    event: "Trace Labs Search Party",
+                    rank: "2ème en équipe",
+                    category: "CTF OSINT en équipe",
+                    date: "Juillet 2026",
+                },
+                lehack_2026: {
+                    event: "LeHACK CTF 2026",
+                    rank: "10ème en équipe",
+                    category: "CTF en équipe",
+                    date: "Juillet 2026",
+                },
                 davinci_2026: {
                     event: "DaVinci CTF 2026",
                     rank: "4ème / 18",
@@ -296,6 +308,18 @@ export const translations = {
                 osint: "OSINT",
             },
             achievements: {
+                tracelabs_lehack_2026: {
+                    event: "Trace Labs Search Party",
+                    rank: "2nd place (Team)",
+                    category: "Team OSINT CTF",
+                    date: "July 2026",
+                },
+                lehack_2026: {
+                    event: "LeHACK CTF 2026",
+                    rank: "10th place (Team)",
+                    category: "Team CTF",
+                    date: "July 2026",
+                },
                 davinci_2026: {
                     event: "DaVinci CTF 2026",
                     rank: "4th / 18",
@@ -462,6 +486,18 @@ export const translations = {
                 osint: "OSINT",
             },
             achievements: {
+                tracelabs_lehack_2026: {
+                    event: "Trace Labs Search Party",
+                    rank: "2. Platz (Team)",
+                    category: "Team-OSINT-CTF",
+                    date: "Juli 2026",
+                },
+                lehack_2026: {
+                    event: "LeHACK CTF 2026",
+                    rank: "10. Platz (Team)",
+                    category: "Team-CTF",
+                    date: "Juli 2026",
+                },
                 davinci_2026: {
                     event: "DaVinci CTF 2026",
                     rank: "4. / 18",

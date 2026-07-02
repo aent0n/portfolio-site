@@ -8,6 +8,16 @@ import { translations } from "@/lib/translations";
 
 const podiumsConfig = [
     {
+        id: "tracelabs_lehack_2026",
+        icon: Trophy, // Podium
+        color: "text-blue",
+    },
+    {
+        id: "lehack_2026",
+        icon: Medal, // Ranked
+        color: "text-blue",
+    },
+    {
         id: "davinci_2026",
         icon: Medal, // Ranked
         color: "text-blue",
