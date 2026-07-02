@@ -48,12 +48,8 @@ export const translations = {
                     desc: "Conception, montage et vol cinématographique.",
                 },
                 print: {
-                    title: "Impression 3D",
-                    desc: "Modélisation et impression FDM.",
-                },
-                plotting: {
-                    title: "Art Génératif & Traçage",
-                    desc: "Création d'œuvres algorithmiques et contrôle de traceurs physiques (AxiDraw).",
+                    title: "Fabrication Numérique & CNC",
+                    desc: "Modélisation 3D (FDM), calibration d'imprimantes et pilotage de traceurs vectoriels (AxiDraw).",
                 },
             },
             achievements: {
@@ -218,12 +214,8 @@ export const translations = {
                     desc: "Design, assembly, and cinematic flying.",
                 },
                 print: {
-                    title: "3D Printing",
-                    desc: "Modeling and FDM printing.",
-                },
-                plotting: {
-                    title: "Generative Art & Plotting",
-                    desc: "Creating algorithmic art and controlling physical line plotters (AxiDraw).",
+                    title: "Digital Fabrication & CNC",
+                    desc: "3D modeling (FDM), printer calibration, and controlling vector plotters (AxiDraw).",
                 },
             },
             achievements: {
@@ -388,12 +380,8 @@ export const translations = {
                     desc: "Design, Montage und filmisches Fliegen.",
                 },
                 print: {
-                    title: "3D-Druck",
-                    desc: "Modellierung und FDM-Druck.",
-                },
-                plotting: {
-                    title: "Generative Kunst & Plotten",
-                    desc: "Erstellung algorithmischer Kunst und Steuerung von Stiftplottern (AxiDraw).",
+                    title: "Digitale Fabrikation & CNC",
+                    desc: "3D-Modellierung (FDM), Drucker-Kalibrierung und Steuerung von Vektorplottern (AxiDraw).",
                 },
             },
             achievements: {

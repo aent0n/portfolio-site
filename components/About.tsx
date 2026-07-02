@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Code2, Shield, Cpu, Aperture, Layers, BrainCircuit, ArrowRight, X, Palette } from "lucide-react";
+import { Code2, Shield, Cpu, Aperture, Layers, BrainCircuit, ArrowRight, X } from "lucide-react";
 import { useLanguage } from "@/lib/context";
 import { useState } from "react";
 import { projectsData } from "@/lib/data";
@@ -83,14 +83,7 @@ export default function About() {
             description: t("about.passions.print.desc"),
             icon: Layers,
             achievements: [
-                { title: t("about.achievements.3d_design.title"), desc: t("about.achievements.3d_design.desc") }
-            ]
-        },
-        {
-            name: t("about.passions.plotting.title"),
-            description: t("about.passions.plotting.desc"),
-            icon: Palette,
-            achievements: [
+                { title: t("about.achievements.3d_design.title"), desc: t("about.achievements.3d_design.desc") },
                 { title: t("about.achievements.plotting_build.title"), desc: t("about.achievements.plotting_build.desc") }
             ]
         },
