@@ -289,15 +289,7 @@ function processFile(filePath) {
         return `> **${icon} ${type.toUpperCase()}${title ? ': ' + title : ''}**\n>`;
     });
 
-    // B. Handle WikiLinks [[Link]] -> [Link](Link)
-    content = content.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
-        // Ignore images (handled below)
-        if (match.startsWith('![[')) return match;
-        const [link, text] = p1.split('|');
-        return `[${text || link}](${link})`;
-    });
-
-    // C. Process Images ![[image.png|100]] -> <img ... />
+    // B. Process Images ![[image.png|100]] -> <img ... />
     content = content.replace(/!\[\[(.*?)\]\]/g, (match, p1) => {
         const parts = p1.split('|');
         const rawImageName = parts[0];
@@ -328,6 +320,12 @@ function processFile(filePath) {
             console.warn(`   ⚠️  Image not found: ${rawImageName}`);
             return match; // Keep original if not found
         }
+    });
+
+    // C. Handle WikiLinks [[Link]] -> [Link](Link)
+    content = content.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
+        const [link, text] = p1.split('|');
+        return `[${text || link}](${link})`;
     });
 
     // 6. Write to Target
