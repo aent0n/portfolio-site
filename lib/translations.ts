@@ -146,7 +146,7 @@ export const translations = {
                     event: "Mindbreak CTF 2026",
                     rank: "4ème en équipe (1er individuel)",
                     category: "CTF en équipe",
-                    date: "Juin 2026",
+                    date: "Juillet 2026",
                 },
                 davinci_2026: {
                     event: "DaVinci CTF 2026",
@@ -330,7 +330,7 @@ export const translations = {
                     event: "Mindbreak CTF 2026",
                     rank: "4th (Team) / 1st (Indiv.)",
                     category: "Team CTF",
-                    date: "June 2026",
+                    date: "July 2026",
                 },
                 davinci_2026: {
                     event: "DaVinci CTF 2026",
@@ -514,7 +514,7 @@ export const translations = {
                     event: "Mindbreak CTF 2026",
                     rank: "4. (Team) / 1. (Einzel)",
                     category: "Team-CTF",
-                    date: "Juni 2026",
+                    date: "Juli 2026",
                 },
                 davinci_2026: {
                     event: "DaVinci CTF 2026",
