@@ -18,10 +18,10 @@ Ce challenge consiste à analyser une image de clé USB `usb_forensic.E01` et un
 ## 3. White-boxing et analyse
 L'analyse de l'image avec `mmls` révèle la présence de deux partitions Linux (0x83) et un espace non alloué de 2 Mo entre elles :
 - **Partition 1** : Secteurs `2048` à `102399` (51.4 Mo)
-- **Espace Non Alloué** : Secteurs `102400` à `106495` (2 Mo)
+- **Espace non alloué** : Secteurs `102400` à `106495` (2 Mo)
 - **Partition 2** : Secteurs `106496` à `409599` (155 Mo)
 
-L'exploration de la **Partition 1** via `fls` et `icat` permet d'extraire les fichiers :
+L'exploration de la **partition 1** via `fls` et `icat` permet d'extraire les fichiers :
 - `notes.txt` : `Meeting 2pm - room B`
 - `infos.txt` : `wifi password: Azerty123`
 
@@ -29,10 +29,10 @@ L'analyse de l'archive `proc_snapshot.tar.gz` (contenant le répertoire `/proc` 
 ```sh
 veracrypt --text --mount /dev/loop18p2 /mnt/secure --password Ib3li3v3inFr33d0m --pim 0 --keyfiles 
 ```
-Cela nous donne le mot de passe de la **Partition 2** chiffrée : `Ib3li3v3inFr33d0m`.
+Cela nous donne le mot de passe de la **partition 2** chiffrée : `Ib3li3v3inFr33d0m`.
 
 ## 4. Résolution
-### A. Déchiffrement VeraCrypt en Userspace
+### A. Déchiffrement VeraCrypt en userspace
 Pour déchiffrer la partition 2 sans privilèges root (dm_mod bloqué), nous extrayons la partition brute et utilisons la bibliothèque Python `pytruecrypt` :
 ```sh
 img_cat usb_forensic.E01 > usb_raw.img

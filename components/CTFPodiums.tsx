@@ -18,6 +18,11 @@ const podiumsConfig = [
         color: "text-blue",
     },
     {
+        id: "mindbreak_2026",
+        icon: Trophy, // 1st individual!
+        color: "text-blue",
+    },
+    {
         id: "davinci_2026",
         icon: Medal, // Ranked
         color: "text-blue",

@@ -12,9 +12,9 @@ tags:
 L'objectif est d'infiltrer la plateforme `https://chain-reactor.wargame.rocks/` inspirée d'un univers dystopique pour y capturer le premier flag.
 
 ## 2. Concepts clés
-* **Bypass de Proxy anti-bot :** Contournement de solutions de filtrage (ici, Anubis) en ciblant les signatures d'agent utilisateur (User-Agent).
-* **Mass Assignment (Assignation de masse) :** Vulnérabilité permettant d'écraser des champs internes (comme les rôles) en soumettant des clés non attendues lors de la mise à jour de profils.
-* **Fingerprint Bypass :** Établissement d'une session valide en envoyant une empreinte navigateur simulée via l'API.
+* **Bypass de proxy anti-bot :** Contournement de solutions de filtrage (ici, Anubis) en ciblant les signatures d'agent utilisateur (User-Agent).
+* **Mass assignment :** Vulnérabilité permettant d'écraser des champs internes (comme les rôles) en soumettant des clés non attendues lors de la mise à jour de profils.
+* **Fingerprint bypass :** Établissement d'une session valide en envoyant une empreinte navigateur simulée via l'API.
 
 ## 3. White-boxing et analyse
 L'analyse du code JavaScript client (`auth.js`, `fp.js`, `admin.js`) et de l'endpoint `/api/routes` révèle :
@@ -24,7 +24,7 @@ L'analyse du code JavaScript client (`auth.js`, `fp.js`, `admin.js`) et de l'end
 - Une vulnérabilité d'assignation de masse sur `/api/profile/update` : l'habilitation `clearance` peut être modifiée par le client.
 
 ## 4. Résolution
-### A. Inscription et Connexion
+### A. Inscription et connexion
 Nous initialisons notre session, simulons le fingerprinting, attendons 3 secondes, puis créons un compte citoyen standard :
 ```sh
 # Fingerprint et session
@@ -45,7 +45,7 @@ curl -s -b cookies.txt -c cookies.txt -X POST -H "Content-Type: application/json
   https://chain-reactor.wargame.rocks/api/auth/login
 ```
 
-### B. Escalade et Capture du Flag
+### B. Exploit et capture du flag
 Nous exploitons l'assignation de masse pour modifier notre rôle vers `Controller`, puis nous récupérons le flag :
 ```sh
 # Escalade de privilèges
