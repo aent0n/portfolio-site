@@ -5,6 +5,9 @@ import rehypeSlug from "rehype-slug";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 export async function generateStaticParams() {
     const slugs = getPostSlugs();
@@ -39,10 +42,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                     source={post.content}
                     options={{
                         mdxOptions: {
-                            remarkPlugins: [remarkGfm, remarkBreaks],
+                            remarkPlugins: [remarkGfm, remarkBreaks, remarkMath],
                             rehypePlugins: [
                                 rehypeSlug,
                                 [rehypeHighlight, { detect: true }],
+                                rehypeKatex,
                             ],
                         },
                     }}
