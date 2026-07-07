@@ -1,0 +1,119 @@
+---
+title: Write-up MindBreak CTF 2026 - Faut tous les toucher
+date: '2026-07-04'
+description: 'Catégorie : Misc / Cryptographie & NFC'
+tags:
+  - Crypto
+---
+**Catégorie :** Misc / Cryptographie & NFC
+**Flag :** `MB{t4p_th3_st4ff_0r_cr4ck_1t}`
+
+## 1. Introduction
+Ce challenge propose un format hybride mêlant épreuves réelles de social engineering et cryptographie. Le flag est protégé par 6 membres du staff, chacun détenant une part d'un secret partagé de Shamir (seuil $k=6$) sur un badge NFC. L'objectif est de reconstruire le secret à partir des parts récupérées.
+
+## 2. Concepts clés
+* **Partage de secret de Shamir :** Schéma de répartition d'un secret en $n$ parts, nécessitant un seuil minimum de $k$ parts pour reconstruire le polynôme par interpolation de Lagrange.
+* **Linear Feedback Shift Register (LFSR) :** Générateur de nombres pseudo-aléatoires défectueux dont les états futurs dépendent linéairement d'une poignée d'états précédents.
+* **Résolution de système linéaire sur corps fini :** Utilisation du pivot de Gauss modulo un nombre premier $p$ pour résoudre des équations linéaires.
+
+## 3. White-boxing et analyse
+Cinq parts sur six ont été collectées légitimement auprès du staff :
+```text
+1-1234009fe9d893519cab6ec8a3b1030354fa3034e5ae5643db7826bb82c6692a
+2-2e6ca01d884a7b9adea56eaac0ab31970103764378ee5cf55d09cb11da9ab30f
+3-c7d4d60e8027b5564f70d6ab86f119ad5d97275dfeb926e1e5fbc995c4415e43
+4-fb3e5b497287931d05cc20a9029bbf7c100b1d34a5891ef8be72d995fb41de95
+5-3c5c9173d7af4b5a44230cf82220b1ff84c0179bf524ee80a2c27a095d8468cb
+```
+
+Le script de génération `shamir-tool.py` implémente un générateur de nombres pseudo-aléatoires (`CryptoRNG`) reposant sur un LFSR de taille 4. Les coefficients du polynôme de Shamir (de degré 5) sont générés séquentiellement.
+
+Le polynôme pour 6 parts s'écrit :
+$$y = S + c_1 x + c_2 x^2 + c_3 x^3 + c_4 x^4 + c_5 x^5 \pmod p$$
+
+Puisque le générateur ne conserve que 4 états, le coefficient $c_5$ n'est pas indépendant et dépend linéairement des précédents :
+$$c_5 = T_0 c_1 + T_1 c_2 + T_2 c_3 + T_3 c_4 \pmod p$$
+
+## 4. Résolution
+En injectant cette relation linéaire dans l'équation de Shamir, on obtient pour chaque part $i$ :
+$$y_i = S + c_1(x_i + T_0 x_i^5) + c_2(x_i^2 + T_1 x_i^5) + c_3(x_i^3 + T_2 x_i^5) + c_4(x_i^4 + T_3 x_i^5) \pmod p$$
+
+Nous réduisons ainsi le nombre d'inconnues de 6 à 5 ($S, c_1, c_2, c_3, c_4$). Les 5 parts récoltées suffisent à résoudre ce système linéaire via un pivot de Gauss modulo $p$.
+
+Le script Python ci-dessous résout le système et extrait le flag :
+```python
+#!/usr/bin/env python3
+
+prime_mod = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
+
+t_0 = 0xD1342543DE82EF95
+t_1 = 0x30B4E9E74D969661
+t_2 = 0xF7C5209A64E4BDE3
+t_3 = 0x4373E86B3AE51E08
+
+shares = [
+    (1, 0x1234009fe9d893519cab6ec8a3b1030354fa3034e5ae5643db7826bb82c6692a),
+    (2, 0x2e6ca01d884a7b9adea56eaac0ab31970103764378ee5cf55d09cb11da9ab30f),
+    (3, 0xc7d4d60e8027b5564f70d6ab86f119ad5d97275dfeb926e1e5fbc995c4415e43),
+    (4, 0xfb3e5b497287931d05cc20a9029bbf7c100b1d34a5891ef8be72d995fb41de95),
+    (5, 0x3c5c9173d7af4b5a44230cf82220b1ff84c0179bf524ee80a2c27a095d8468cb)
+]
+
+def mod_inverse(a, m):
+    return pow(a, m - 2, m)
+
+def solve_system(matrix, vector, p):
+    n = len(vector)
+    for i in range(n):
+        pivot = i
+        while pivot < n and matrix[pivot][i] == 0:
+            pivot += 1
+            
+        matrix[i], matrix[pivot] = matrix[pivot], matrix[i]
+        vector[i], vector[pivot] = vector[pivot], vector[i]
+
+        inv = mod_inverse(matrix[i][i], p)
+        for j in range(i, n):
+            matrix[i][j] = (matrix[i][j] * inv) % p
+        vector[i] = (vector[i] * inv) % p
+
+        for k in range(n):
+            if k != i:
+                factor = matrix[k][i]
+                for j in range(i, n):
+                    matrix[k][j] = (matrix[k][j] - factor * matrix[i][j]) % p
+                vector[k] = (vector[k] - factor * vector[i]) % p
+
+    return vector
+
+matrix = []
+vector = []
+
+for x, y in shares:
+    x_2 = pow(x, 2, prime_mod)
+    x_3 = pow(x, 3, prime_mod)
+    x_4 = pow(x, 4, prime_mod)
+    x_5 = pow(x, 5, prime_mod)
+
+    row = [
+        1,
+        (x + t_0 * x_5) % prime_mod,
+        (x_2 + t_1 * x_5) % prime_mod,
+        (x_3 + t_2 * x_5) % prime_mod,
+        (x_4 + t_3 * x_5) % prime_mod
+    ]
+    matrix.append(row)
+    vector.append(y)
+
+solution = solve_system(matrix, vector, prime_mod)
+secret_int = solution[0]
+
+secret_bytes = secret_int.to_bytes((secret_int.bit_length() + 7) // 8, 'big')
+print("Secret récupéré :", secret_bytes.decode('utf-8', errors='ignore'))
+```
+
+Exécution du script :
+```sh
+$ python3 shamir.py
+Secret récupéré : MB{t4p_th3_st4ff_0r_cr4ck_1t}
+```

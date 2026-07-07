@@ -1,0 +1,81 @@
+---
+title: Write-up MindBreak CTF 2026 - Opération Nightfall
+date: '2026-07-03'
+description: 'Catégorie : Réseau / Forensics'
+tags:
+  - Forensics
+---
+**Catégorie :** Réseau / Forensics
+**Flag :** `MB{0P3R4T10N-N1GHTF4LL-7734}`
+
+## 1. Introduction
+L'analyse porte sur une capture réseau `agent_traffic.pcap` au cours de laquelle un agent infiltré a tenté d'exfiltrer un code classifié à destination d'un contact externe. L'objectif est de reconstituer la communication clandestine et d'en extraire le secret.
+
+## 2. Concepts clés
+* **Covert Channel (Canal caché) :** Technique consistant à utiliser un protocole réseau standard pour transmettre des données de manière non conventionnelle et invisible pour les pare-feux ordinaires.
+* **Exfiltration via ARP :** Utilisation des champs d'adresses matérielles (MAC) et IP d'une trame ARP pour encoder des informations clandestines.
+* **Encodage Base58 :** Schéma de codage binaire-texte couramment utilisé pour représenter de grands nombres sous forme de chaînes de texte sans caractères ambigus.
+
+## 3. White-boxing et analyse
+L'inspection des protocoles présents dans le fichier `agent_traffic.pcap` met en évidence l'absence totale de flux applicatifs TCP ou HTTP (uniquement des paquets ARP et de rares requêtes DNS standard).
+
+En analysant de plus près les paquets ARP, on détecte 13 requêtes suspectes :
+1. **MAC suspectes** : Ces requêtes utilisent l'OUI Raspberry Pi `b8:27:eb`. Les 3 octets de poids faible correspondent en fait à des valeurs hexadécimales représentant des caractères ASCII.
+2. **Offsets via adresses IP** : L'adresse IP de l'émetteur augmente de 3 à chaque fois (`192.168.1.200`, `192.168.1.203`, etc.). Le dernier octet sert d'index (`200 + offset`) pour replacer les 3 octets de données au bon endroit.
+
+En ordonnant les octets récupérés selon les IP sources, on reconstitue la chaîne encodée suivante :
+`o6A34A61LzYr1nmW8AzKJrahDCArPKrVP2QT56`
+
+## 4. Résolution
+La chaîne de caractères utilise l'alphabet Base58. Nous écrivons un script Python reposant sur `scapy` pour parser automatiquement le fichier PCAP, réordonner les fragments et décoder la charge utile Base58 :
+
+```python
+#!/usr/bin/env python3
+from scapy.all import rdpcap, ARP
+
+pcap_path = "agent_traffic.pcap"
+packets = rdpcap(pcap_path)
+
+# Extraction des payloads selon l'IP source
+payloads = {}
+for pkt in packets:
+    if pkt.haslayer(ARP):
+        src_mac = pkt.src
+        if src_mac.startswith("b8:27:eb"):
+            # L'IP source donne l'offset (ex: 192.168.1.200 -> offset 0)
+            psrc = pkt[ARP].psrc
+            last_octet = int(psrc.split(".")[-1])
+            offset = last_octet - 200
+            
+            # Les 3 octets de payload sont les 3 derniers octets de la MAC source
+            mac_bytes = bytes.fromhex(src_mac.replace(":", ""))[3:]
+            payloads[offset] = mac_bytes
+
+# Reconstruction de la chaîne encodée
+encoded_str = ""
+for offset in sorted(payloads.keys()):
+    encoded_str += payloads[offset].decode('ascii', errors='ignore').strip('\x00')
+
+print(f"[+] Chaîne encodée reconstituée : {encoded_str}")
+
+# Décodage Base58
+ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+num = 0
+for char in encoded_str:
+    num = num * 58 + ALPHABET.index(char)
+
+decoded_bytes = bytearray()
+while num > 0:
+    decoded_bytes.append(num % 256)
+    num //= 256
+decoded_bytes.reverse()
+
+print(f"[+] Code classifié extrait : {decoded_bytes.decode('utf-8')}")
+```
+
+Exécution du script :
+```sh
+$ python3 decode.py
+[+] Chaîne encodée reconstituée : o6A34A61LzYr1nmW8AzKJrahDCArPKrVP2QT56
+[+] Code classifié extrait : MB{0P3R4T10N-N1GHTF4LL-7734}
+```

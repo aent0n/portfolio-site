@@ -1,0 +1,33 @@
+---
+title: Write-up MindBreak CTF 2026 - A link to the past
+date: '2026-07-03'
+description: 'Catégorie : Game Hacking / Reverse'
+tags:
+  - Reverse
+---
+**Catégorie :** Game Hacking / Reverse
+**Flag :** `MB(L1nk 1s t00 f4st)`
+
+## 1. Introduction
+Ce défi est une référence au jeu légendaire de 1991 *The Legend of Zelda : A Link to the Past*. L'objectif est d'éliminer les gardiens du donjon (les boss) en moins de 15 secondes avec l'équipement de base, sur une version modifiée du jeu fournie sous forme d'exécutable Windows.
+<img src="/images/writeups/write-up-mindbreak-ctf-2026-a-link-to-the-past/Pasted%20image%2020260703232503.png" alt="Pasted image 20260703232503.png" width="193" />
+## 2. Concepts clés
+* **Édition de mémoire vive :** Altération des valeurs en mémoire d'un processus en cours d'exécution pour modifier son comportement.
+* **Gel d'adresse mémoire :** Blocage permanent d'une valeur spécifique (ex. les points de vie d'un boss à 0) pour forcer une condition de victoire instantanée.
+* **Table de caractères personnalisée (Tilemap) :** Mécanisme où le jeu n'utilise pas un encodage standard (ASCII/UTF-8) pour ses chaînes de texte, empêchant la simple lecture de strings en mémoire.
+
+## 3. White-boxing et analyse
+L'analyse de l'exécutable Windows et du fichier `.ini` associé montre la possibilité de charger un point de sauvegarde (savestate) juste devant le boss (Ctrl+A).
+
+Après avoir écarté BizHawk (qui gère les ROMs de console mais a échoué sur ce format hybride Windows), nous utilisons Cheat Engine pour inspecter la mémoire vive du processus du jeu. Le but est d'isoler l'adresse contenant les points de vie (HP) des boss. Pour cela, nous effectuons des recherches itératives :
+- Scan initial pour une valeur inconnue.
+- Dégâts infligés au boss -> Scan pour une valeur diminuée.
+- Temps d'attente sans combat -> Scan pour une valeur inchangée.<img src="/images/writeups/write-up-mindbreak-ctf-2026-a-link-to-the-past/Pasted%20image%2020260703231828.png" alt="Pasted image 20260703231828.png" width="134" />
+
+## 4. Résolution
+Une fois l'adresse mémoire de gestion des points de vie identifiée grâce aux filtres successifs, nous figeons (gélons) cette valeur à `0`.
+
+Cette altération élimine instantanément tous les boss (One-Shot), respectant largement la contrainte de moins de 15 secondes imposée. L'écran de victoire s'affiche alors avec une boîte de dialogue contenant la phrase en leetspeak : `L1nk 1s t00 f4st`.
+![Pasted image 20260704003507.png](/images/writeups/write-up-mindbreak-ctf-2026-a-link-to-the-past/Pasted%20image%2020260704003507.png)
+En encapsulant ce texte dans le format requis `MB(...)`, nous obtenons le flag final :
+`MB(L1nk 1s t00 f4st)`
